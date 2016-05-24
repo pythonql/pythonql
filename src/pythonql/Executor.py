@@ -152,5 +152,11 @@ def PyQuery( select_list, for_clauses, groupby_list, where, order_list, prior_lc
 if __name__=='__main__':
   x = [ 1 , 2 , 3 , 4 , 5 ] 
   y = [ 6 , 7 , 8 , 9 , 10 ] 
-  res = PyQuery ( [ ("z", None), ("sum(w)", "WWW") ] , [ ( "z" , "in" , """ x """ ) , ( "w" , "in" , """ y """ ) ] , ["z"] , [], """ z % 2 == 0 """ , locals())
+  res = PyQuery ( 
+	[ ("z", None), ("sum(w)", "WWW") ], # Select clause, expressions and their aliases
+	[ ( "z" , "in" , """ x """ ) , ( "w" , "in" , """ y """ ) ], # From clause
+	["z"],	# Group by clause
+	""" z % 2 == 0 """, # Where clause
+	[],	# Order by clause
+	locals())
   print(res)
