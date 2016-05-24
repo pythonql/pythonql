@@ -36,17 +36,4 @@ idea is to push as much work as possible into the database layer.
 So it will be possible to write Python code with query and path expressions that run against either databases or local data structures.
 For example (we give an example that will run with our preprocessor, once integrated into Python the first import statement won't be needed).
 
-We need a better example here:
-```python
-  from pythonql.Executor import *
-  def myfunc(x):
-    return x**2
-    
-  data = [{"name":"Joe, "age":16, "salary":150},
-          {"name":"John", "age":16, "salary":120},
-          {"name":"Nick", "age":20, "salary":130},
-          {"name":"Bob", "age":30, "salary":300}]
-  
-  max_sal = max( select x["salary"] for x in data )
-  age_grp_sum = select sum(x["salary"] for x in data group by x["age"])
-  ```
+We need a good example here that's easy enough, but showcases the power of the approach
