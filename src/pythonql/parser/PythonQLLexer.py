@@ -515,7 +515,7 @@ def serializedATN():
         buf.write("\u031f\u0325\u0329\u032e\u0333\u0335\u033c\u033e\u0342")
         buf.write("\u034b\u0358\u035e\u0362\u0365\u0368\u036b\u0373\u0379")
         buf.write("\u037e\u0381\u0385\u0388\u038c\n\3-\2\3:\3\3;\4\3A\5\3")
-        buf.write("B\6\3N\7\3O\b\b\2\2")
+        buf.write("B\6\3N\7\3O\b\2\3\2")
         return buf.getvalue()
 
 

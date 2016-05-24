@@ -2,6 +2,7 @@ import sys
 from antlr4 import *
 from antlr4.tree.Tree import *
 from parser.CustomLexer import CustomLexer
+from parser.Errors import CustomErrorStrategy, CustomErrorListener, BufferedErrorListener
 from parser.PythonQLParser import PythonQLParser
 from functools import reduce
 
@@ -16,11 +17,32 @@ class MyToken(TerminalNodeImpl):
 
 # Parse the PythonQL file and return a parse tree
 def parsePythonQL( f ):
+  # Set up the lexer
   inputStream = FileStream(f)
   lexer = CustomLexer(inputStream)
   stream = CommonTokenStream(lexer)
+
+  # Set up the error handling stuff
+  error_handler = CustomErrorStrategy()
+  error_listener = CustomErrorListener()
+  buffered_errors = BufferedErrorListener()
+  error_listener.addDelegatee(buffered_errors)
+
+  # Set up the parser
   parser = PythonQLParser(stream)
+  parser.errHandler = error_handler
+
+  # Remove default terminal error listener & add our own
+  parser.removeErrorListeners()
+  parser.addErrorListener(error_listener)
+
+  # Parse the input
   tree = parser.file_input()
+
+  if error_listener.errors_encountered > 0:
+    print(buffered_errors.buffer)
+    raise Exception("Syntax error")
+
   return (tree,parser)
 
 ############################################################
