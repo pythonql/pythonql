@@ -17,15 +17,19 @@ So we can write path expression in the query language (and elsewhere in Python e
 
   - for x in data ./ {key == 'green'} .// { key == 'yellow' }
 
-2. Query expression:
+2. Query expressions:
 
    select x, y, sum(w)
-   for x in data ./,
-       y = x ./,
-       w in data 2
-   group by x,y
-   where x % 2 == 0
 
+   for x in data ./,
+
+       y = x ./,
+
+       w in data 2
+
+   group by x,y
+
+   where x % 2 == 0
 
 
 We'll be adding a window and maybe try/catch to the expression, to make it as powerful as a JSONiq query.
