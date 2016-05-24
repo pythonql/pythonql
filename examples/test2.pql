@@ -1,0 +1,15 @@
+x = [[1,2,3,4,5]]
+
+while 1:
+  res = ( select z, z+2
+        for z in (x ./ { label == y }) .//,
+            y in z
+       order by z
+       where z % 2 == 0 )
+  shit = happens
+  x = z .// { label == w }
+  while 2:
+    noshit = happens
+    never = again
+  print (hello)
+
