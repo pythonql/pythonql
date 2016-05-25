@@ -19,21 +19,4 @@ So we can write path expression in the query language (and elsewhere in Python e
 ```
 
  - Query expressions:
-```sql
-   select x, y, sum(w)
-   for x in data ./,
-       y = x ./,
-       w in data2
-   group by x,y
-   where x % 2 == 0
-```
-
-We'll be adding a window and maybe try/catch to the expression, to make it as powerful as a JSONiq query.
-
-The query expressions can be executed on top of any Python collections, but if databases are at the source, the
-idea is to push as much work as possible into the database layer.
-
-So it will be possible to write Python code with query and path expressions that run against either databases or local data structures.
-For example (we give an example that will run with our preprocessor, once integrated into Python the first import statement won't be needed).
-
-We need a good example here that's easy enough, but showcases the power of the approach
+Grammar TDB
