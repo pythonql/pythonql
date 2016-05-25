@@ -14,6 +14,8 @@ its confusing. Instead of `test` in EBNF we use `expr`, and instead of
   expr := old_expr ( path_step )*;
   path_step := './' | './/' | '{' expr '}';
 ```
+`'./'` is a child path step. `.//` is a descendent path step. `'{' expr '}'` is a filter.
+I don't have descendent or self here, do we need one?
 
 ##Query Expression
 This is our main grammar piece. Again, all Python expressions are written as
