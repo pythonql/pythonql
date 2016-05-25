@@ -29,13 +29,13 @@ query_expression := select
                   (for|let) 
                   (for|let|where|window|count|groupby|orderby)* ;
 
-select := ('select'|'return') (expr ['as' NAME] | '*') ( ',' expr ['as' NAME] | '*' ) * ;
+select := ('select'|'return') expr ;
 
-for := ('for'|'from') NAME 'in' expr (',' NAME 'in' expr ) ;
+for := ('for'|'from') NAME 'in' expr (',' NAME 'in' expr ) * ;
 
-let := ('let'|'with') NAME '=' expr (',' NAME '=' expr );
+let := ('let'|'with') NAME '=' expr (',' NAME '=' expr ) *;
 
-where := expr ;
+where := ''where' | 'having' expr ;
 
 window := TBD
 
