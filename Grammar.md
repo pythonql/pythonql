@@ -46,3 +46,4 @@ groupby := 'group' 'by' expr (',' expr) * ;
 orderby := 'order' 'by' expr ['asc'|'desc'] (',' expr ['asc'|'desc'] ) *;
 
 ```
+**TODO:** We need to decide if we want to keep the select in the current shape. Or just replace the whole thing with a single expression like in JSONiq or XQuery. The semantics of the select list with mutlitple expressions and aliases right now is to create a PQTuple object, which combines dict(JSON), tuple (native Python tuple) and namedtuple (also avaiable in Python) interfaces. So its pretty cool for relational data, but also can be used for JSONiq and maybe XML (we can make a default mapping from PQTuple to XML.
