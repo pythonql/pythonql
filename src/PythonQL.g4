@@ -498,44 +498,30 @@ atom
 // This is our addition to the grammar, the Query Expression
 query_expression: 
   select_clause
-  from_clause
-  group_by_clause?
-  where_clause?
-  order_by_clause?
+  (for_clause|let_clause)
+  (for_clause|let_clause|group_by_clause|where_clause|order_by_clause|count_clause)*
   ;
 
-select_clause: 'select' selectlist
+select_clause: ('select'|'return') selectvar (',' selectvar)*
 ;
 
-selectlist
- : selectvar ( ',' selectvar )* ','?
- ;
-
 selectvar
- : selectvar_star
- | selectvar_alias
- ;
-
-selectvar_star
- : '*'
- ;
-
-selectvar_alias
  : test ('as' NAME)?
  ;
 
-from_clause: 'for' from_clause_entry (',' from_clause_entry)*
+for_clause: ('for'|'from') for_clause_entry (',' for_clause_entry)*
 ;
 
-from_clause_entry
-  : from_clause_var ('in' | '=') test 
+for_clause_entry
+  : NAME 'in' test 
   ;
 
-from_clause_var: NAME
-  ;
+let_clause: ('let'|'with') let_clause_entry (',' let_clause_entry)*
+;
 
-from_in: 'in';
-from_assign: '=';
+let_clause_entry
+  : NAME '=' test 
+  ;
 
 order_by_clause: 'order' 'by' orderlist
 ;
@@ -557,11 +543,10 @@ group_by_vars
 
 group_by_var: NAME;
 
-having_clause: 'having' test
+where_clause: ('where'|'having') test
 ;
 
-where_clause: 'where' test
-;
+count_clause: 'count' NAME;
 
 /// testlist_comp: test ( comp_for | (',' test)* [','] )
 testlist_comp

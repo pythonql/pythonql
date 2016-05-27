@@ -652,15 +652,6 @@ class PythonQLListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by PythonQLParser#selectlist.
-    def enterSelectlist(self, ctx):
-        pass
-
-    # Exit a parse tree produced by PythonQLParser#selectlist.
-    def exitSelectlist(self, ctx):
-        pass
-
-
     # Enter a parse tree produced by PythonQLParser#selectvar.
     def enterSelectvar(self, ctx):
         pass
@@ -670,66 +661,39 @@ class PythonQLListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by PythonQLParser#selectvar_star.
-    def enterSelectvar_star(self, ctx):
+    # Enter a parse tree produced by PythonQLParser#for_clause.
+    def enterFor_clause(self, ctx):
         pass
 
-    # Exit a parse tree produced by PythonQLParser#selectvar_star.
-    def exitSelectvar_star(self, ctx):
-        pass
-
-
-    # Enter a parse tree produced by PythonQLParser#selectvar_alias.
-    def enterSelectvar_alias(self, ctx):
-        pass
-
-    # Exit a parse tree produced by PythonQLParser#selectvar_alias.
-    def exitSelectvar_alias(self, ctx):
+    # Exit a parse tree produced by PythonQLParser#for_clause.
+    def exitFor_clause(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by PythonQLParser#from_clause.
-    def enterFrom_clause(self, ctx):
+    # Enter a parse tree produced by PythonQLParser#for_clause_entry.
+    def enterFor_clause_entry(self, ctx):
         pass
 
-    # Exit a parse tree produced by PythonQLParser#from_clause.
-    def exitFrom_clause(self, ctx):
-        pass
-
-
-    # Enter a parse tree produced by PythonQLParser#from_clause_entry.
-    def enterFrom_clause_entry(self, ctx):
-        pass
-
-    # Exit a parse tree produced by PythonQLParser#from_clause_entry.
-    def exitFrom_clause_entry(self, ctx):
+    # Exit a parse tree produced by PythonQLParser#for_clause_entry.
+    def exitFor_clause_entry(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by PythonQLParser#from_clause_var.
-    def enterFrom_clause_var(self, ctx):
+    # Enter a parse tree produced by PythonQLParser#let_clause.
+    def enterLet_clause(self, ctx):
         pass
 
-    # Exit a parse tree produced by PythonQLParser#from_clause_var.
-    def exitFrom_clause_var(self, ctx):
-        pass
-
-
-    # Enter a parse tree produced by PythonQLParser#from_in.
-    def enterFrom_in(self, ctx):
-        pass
-
-    # Exit a parse tree produced by PythonQLParser#from_in.
-    def exitFrom_in(self, ctx):
+    # Exit a parse tree produced by PythonQLParser#let_clause.
+    def exitLet_clause(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by PythonQLParser#from_assign.
-    def enterFrom_assign(self, ctx):
+    # Enter a parse tree produced by PythonQLParser#let_clause_entry.
+    def enterLet_clause_entry(self, ctx):
         pass
 
-    # Exit a parse tree produced by PythonQLParser#from_assign.
-    def exitFrom_assign(self, ctx):
+    # Exit a parse tree produced by PythonQLParser#let_clause_entry.
+    def exitLet_clause_entry(self, ctx):
         pass
 
 
@@ -787,21 +751,21 @@ class PythonQLListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by PythonQLParser#having_clause.
-    def enterHaving_clause(self, ctx):
-        pass
-
-    # Exit a parse tree produced by PythonQLParser#having_clause.
-    def exitHaving_clause(self, ctx):
-        pass
-
-
     # Enter a parse tree produced by PythonQLParser#where_clause.
     def enterWhere_clause(self, ctx):
         pass
 
     # Exit a parse tree produced by PythonQLParser#where_clause.
     def exitWhere_clause(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#count_clause.
+    def enterCount_clause(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#count_clause.
+    def exitCount_clause(self, ctx):
         pass
 
 

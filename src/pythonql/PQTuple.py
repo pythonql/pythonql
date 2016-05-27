@@ -28,6 +28,8 @@ class PQTuple:
     return PQTuple(list(self.tuple), self.schema)
 
   def __repr__(self):
+    #print(self.schema)
+    #print(self.tuple)
     itms = list(self.schema.items())
     itms.sort(key=lambda x:x[1])
     return "{" + ",".join([ '"%s":%s' % (i[0].lstrip().rstrip(), repr(self.tuple[i[1]]))  for i in itms]) + "}"

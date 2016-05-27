@@ -87,6 +87,15 @@ def getText(tree):
             res += getText(c)
         return res
 
+# Get all top non-terminals from the tree of specific types
+def getAllNodes(tree,rule_list):
+  if isinstance(tree,TerminalNodeImpl):
+    return []
+  if tree.getRuleIndex() in rule_list:
+    return [tree]
+  else:
+    return [x for c in tree.children for x in getAllNodes(c)]
+
 # Create a token list out of a heterogenous list
 def mk_tok(items):
     if isinstance(items,list):
@@ -122,35 +131,41 @@ def get_path_expression_terminals(tree,parser):
 
 # Process the select clause
 def process_select_clause(tree,parser):
-    sel_vars = [t for t in tree.children[1].children if ruleType(t,parser.RULE_selectvar)]
+    sel_vars = [c for c in tree.children if ruleType(c,parser.RULE_selectvar)]
     res = []
-    for sv in sel_vars:
-        v = sv.children[0]
-        if v.getRuleIndex()==parser.RULE_selectvar_star:
-            res.append( mk_tok(["(", "'*'", "None", ")"]) )
-        else:
-            value_toks = mk_tok(['"""',get_all_terminals(v,parser),'"""'])
-            if len(v.children)==1:
-                res.append(mk_tok(["(", value_toks, ",", "None",")"]))
-            else:
-                value = v.children[0]
-                alias = v.children[2]
-                alias_toks = mk_tok(['"""',get_all_terminals(alias,parser),'"""'])
-                res.append(mk_tok(["(", value_toks, ",", alias_toks,")"]))
+    for v in sel_vars:
+      value_toks = mk_tok(['"""',get_all_terminals(v,parser),'"""'])
+      if len(v.children)==1:
+        res.append(mk_tok(["(", value_toks, ",", "None",")"]))
+      else:
+        value = v.children[0]
+        alias = v.children[2]
+        alias_toks = mk_tok(['"""',get_all_terminals(alias,parser),'"""'])
+        res.append(mk_tok(["(", value_toks, ",", alias_toks,")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
-    return mk_tok(["[", res, "]"])
+    return mk_tok(["{",'"name":"select"', ",", '"select_list"', ":" , "[", res, "]", "}"])
 
-# Process the from clause
-def process_from_clause(tree,parser):
-    clauses = [c for c in tree.children if ruleType(c,parser.RULE_from_clause_entry)]
+# Process the for clause
+def process_for_clause(tree,parser):
+    clauses = [c for c in tree.children if ruleType(c,parser.RULE_for_clause_entry)]
     res = []
     for cl in clauses:
         variable = '"'+getText(cl.children[0])+'"'
-        type_of_access = '"'+getText(cl.children[1])+'"'
         expression = get_all_terminals(cl.children[2],parser)
-        res.append( mk_tok(["(", variable, ",", type_of_access, ",", '"""', expression, '"""',")"]) )
-    res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
-    return mk_tok(["[", res, "]"])
+        clause_tokens =  mk_tok(["{", '"name":"for"', ",", '"var"', ":", variable, ",", '"expr"', ":", '"""', expression, '"""',"}"]) 
+        res.append(clause_tokens)
+    return res
+
+# Process the let clause
+def process_let_clause(tree,parser):
+    clauses = [c for c in tree.children if ruleType(c,parser.RULE_let_clause_entry)]
+    res = []
+    for cl in clauses:
+        variable = '"'+getText(cl.children[0])+'"'
+        expression = get_all_terminals(cl.children[2],parser)
+        clause_tokens =  mk_tok(["{", '"name":"let"', ",", '"var"', ":", variable, ",", '"expr"', ":", '"""', expression, '"""',"}"]) 
+        res.append(clause_tokens)
+    return res
 
 # Process the order by clause
 def process_orderby_clause(tree,parser):
@@ -162,7 +177,7 @@ def process_orderby_clause(tree,parser):
         ascdesc = '"'+ascdesc+'"'
         res.append(mk_tok(["(", '"""',get_all_terminals(e.children[0],parser),'"""',",", ascdesc, ")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
-    return mk_tok(["[",res,"]"])
+    return mk_tok(["{",'"name":"orderby"', "," '"orderby_list"', ":" , "[", res, "]", "}"])
 
 # Process the group by clause
 def process_groupby_clause(tree,parser):
@@ -171,37 +186,45 @@ def process_groupby_clause(tree,parser):
     for e in [e for e in groupby_list.children if ruleType(e,parser.RULE_group_by_var)]:
         res.append(mk_tok(['"'+getText(e)+'"']))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
-    return mk_tok(["[",res,"]"])
+    return mk_tok(["{",'"name":"groupby"', "," '"groupby_list"', ":", "[", res, "]", "}"])
+
+def process_count_clause(tree,parser):
+    return mk_tok(["{", '"name":"count"', ",", '"var"', ":", '"'+getText(tree.children[1])+'"', "}"])
 
 # Process the where clause (this is easy)
 def process_where_clause(tree,parser):
-    return mk_tok(['"""', get_all_terminals(tree.children[1],parser),'"""'])
+    return mk_tok(["{", '"name":"where"', ",", '"expr"', ":", '"""', get_all_terminals(tree.children[1],parser),'"""',"}"])
 
 # Process the query. The query is turned into a function call
 # PyQuery that takes all the clauses and evaluates them.
 
 def get_query_terminals(tree,parser):
-    empty_list = mk_tok(["[]"])
     children = tree.children
-    select_cl = children[0]
-    from_cl = children[1]
-    where_cl = next((c for c in children if c.getRuleIndex()==parser.RULE_where_clause),None)
-    groupby_cl = next((c for c in children if c.getRuleIndex()==parser.RULE_group_by_clause),None)
-    orderby_cl = next((c for c in children if c.getRuleIndex()==parser.RULE_order_by_clause),None)
-    
-    result = []
-    select_tokens = process_select_clause(select_cl,parser)
-    from_tokens = process_from_clause(from_cl,parser)
-    orderby_tokens = empty_list if not orderby_cl else process_orderby_clause(orderby_cl,parser)
-    groupby_tokens = empty_list if not groupby_cl else process_groupby_clause(groupby_cl,parser)
-    where_tokens = mk_tok(["None"]) if not where_cl else process_where_clause(where_cl,parser)
-    return mk_tok(["PyQuery", "(", 
-                    select_tokens,",",
-                    from_tokens,",",
-                    groupby_tokens,",",
-                    where_tokens,",",
-                    orderby_tokens,",",
-		    mk_tok(["locals","(",")"]), ")"])
+    clauses = []
+
+    # We process select clause separately, because we add it
+    # to the end of the list
+
+    select_clause = process_select_clause(children[0], parser)
+    for c in children[1:]:
+      if c.getRuleIndex() == parser.RULE_for_clause:
+        clauses += process_for_clause(c, parser)
+      elif c.getRuleIndex() == parser.RULE_let_clause:
+        clauses += process_let_clause(c, parser)
+      elif c.getRuleIndex() == parser.RULE_where_clause:
+        clauses.append( process_where_clause(c, parser) )
+      elif c.getRuleIndex() == parser.RULE_count_clause:
+        clauses.append( process_count_clause(c, parser) )
+      elif c.getRuleIndex() == parser.RULE_group_by_clause:
+        clauses.append( process_groupby_clause(c, parser) )
+      elif c.getRuleIndex() == parser.RULE_order_by_clause:
+        clauses.append( process_orderby_clause(c, parser) )
+
+    # Add the select clause at the end
+    clauses.append( select_clause )
+
+    clauses_repr = reduce( lambda x,y: x + mk_tok([","]) + y, clauses)
+    return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ")"])
 
 # Process an arbitrary PythonQL program
 def get_all_terminals(tree,parser):

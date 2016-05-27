@@ -365,48 +365,28 @@ class PythonQLVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PythonQLParser#selectlist.
-    def visitSelectlist(self, ctx):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by PythonQLParser#selectvar.
     def visitSelectvar(self, ctx):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PythonQLParser#selectvar_star.
-    def visitSelectvar_star(self, ctx):
+    # Visit a parse tree produced by PythonQLParser#for_clause.
+    def visitFor_clause(self, ctx):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PythonQLParser#selectvar_alias.
-    def visitSelectvar_alias(self, ctx):
+    # Visit a parse tree produced by PythonQLParser#for_clause_entry.
+    def visitFor_clause_entry(self, ctx):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PythonQLParser#from_clause.
-    def visitFrom_clause(self, ctx):
+    # Visit a parse tree produced by PythonQLParser#let_clause.
+    def visitLet_clause(self, ctx):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PythonQLParser#from_clause_entry.
-    def visitFrom_clause_entry(self, ctx):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PythonQLParser#from_clause_var.
-    def visitFrom_clause_var(self, ctx):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PythonQLParser#from_in.
-    def visitFrom_in(self, ctx):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PythonQLParser#from_assign.
-    def visitFrom_assign(self, ctx):
+    # Visit a parse tree produced by PythonQLParser#let_clause_entry.
+    def visitLet_clause_entry(self, ctx):
         return self.visitChildren(ctx)
 
 
@@ -440,13 +420,13 @@ class PythonQLVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PythonQLParser#having_clause.
-    def visitHaving_clause(self, ctx):
+    # Visit a parse tree produced by PythonQLParser#where_clause.
+    def visitWhere_clause(self, ctx):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PythonQLParser#where_clause.
-    def visitWhere_clause(self, ctx):
+    # Visit a parse tree produced by PythonQLParser#count_clause.
+    def visitCount_clause(self, ctx):
         return self.visitChildren(ctx)
 
 
