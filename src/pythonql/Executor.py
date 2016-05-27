@@ -25,16 +25,48 @@ def PQChildPath (coll):
 
 # Implement a descendents path on some collection or map
 def PQDescPath(coll):
-  stack = [coll]
+  stack = []
+  if isList(coll):
+    stack = [i for i in coll]
+  elif isMap(coll):
+    stack = list(coll.values())
   while stack:
     i = stack.pop()
+    yield i
     if isList(i):
-      [stack.push(j) for j in i[1:]]
+      [stack.append(j) for j in i[1:]]
+      if isList(i[0]):
+        stack.extend([ci for ci in i[0]])
+      elif isMap(i[0]):
+        stack.extend(i[0].values())
       yield i[0]
-    if isMap(i):
+    elif isMap(i):
       keys = list(i.keys())
-      [stack.push(i[j]) for j in keys[1:]]
+      [stack.append(i[j]) for j in keys[1:]]
       yield i[keys[0]]
+
+#Implements a predicate step on a collection
+def PQPred(coll, pred):
+  if isList(coll):
+    return PQPred_list(coll,pred)
+  elif isMap(coll):
+    return PQPred_map(coll,pred)
+
+def PQPred_list(coll,pred):
+  lcs = locals()
+  for i in coll:
+    lcs.update({'item':i})
+    if eval(pred,globals(),lcs):
+      yield i
+
+def PQPred_map(coll,pred):
+  lcs = locals()
+  result = {}
+  for (k,v) in coll.items():
+    lcs.update({'key':k, 'value':v})
+    if eval(pred,globals(),lcs):
+      result[k] = v
+  return result
 
 # create a table with an empty tuple
 def emptyTuple(schema):

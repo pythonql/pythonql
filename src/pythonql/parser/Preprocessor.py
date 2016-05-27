@@ -120,12 +120,12 @@ def get_path_expression_terminals(tree,parser):
     
     for c in children[1:]:
         if isChildStep(c,parser):
-            result = mk_tok([ "child_path", "(", result, ")" ])
+            result = mk_tok([ "PQChildPath", "(", result, ")" ])
         elif isDescStep(c,parser):
-            result = mk_tok([ "desc_path", "(", result, ")"])
+            result = mk_tok([ "PQDescPath", "(", result, ")"])
         elif isPredStep(c,parser):
             condition = mk_tok([ '"""', get_all_terminals(c,parser)[1:-1], '"""'])
-            result = mk_tok([ "pred_path", "(", result, ",", condition, ")"])
+            result = mk_tok([ "PQPred", "(", result, ",", condition, ")"])
     
     return result
 
