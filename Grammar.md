@@ -35,7 +35,7 @@ for := ('for'|'from') NAME 'in' expr (',' NAME 'in' expr ) * ;
 
 let := ('let'|'with') NAME '=' expr (',' NAME '=' expr ) *;
 
-where := ''where' | 'having' expr ;
+where := 'where' | 'having' expr ;
 
 window := TBD
 
