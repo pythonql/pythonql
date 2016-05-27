@@ -15,7 +15,10 @@ its confusing. Instead of `test` in EBNF we use `expr`, and instead of
   path_step := './' | './/' | '{' expr '}';
 ```
 `'./'` is a child path step. `.//` is a descendent path step. `'{' expr '}'` is a filter.
-I don't have descendent or self here, do we need one?
+
+Predicate expression is an arbitrary Python expression, but has the following predefined variables
+avaiable for use: `item` if the predicate is applied to list and `key` and `value` if the predicate
+is applied to a map.
 
 ##Query Expression
 This is our main grammar piece. Again, all Python expressions are written as
@@ -29,7 +32,9 @@ query_expression := select
                   (for|let) 
                   (for|let|where|window|count|groupby|orderby)* ;
 
-select := ('select'|'return') expr ;
+select := ('select'|'return') select_var (',' select_var) * ;
+
+select_var := expr ("as" NAME)? ;
 
 for := ('for'|'from') NAME 'in' expr (',' NAME 'in' expr ) * ;
 
