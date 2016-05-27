@@ -76,13 +76,17 @@ def processSelectClause(c, table, prior_lcs):
   # Create a new table that will be filled out by this
   # method
   new_table = PQTable(select_schema)
+
+  # Compile all the expressions
+  comp_exprs = [ s[0].lstrip() for s in c["select_list"] ]
+  comp_exprs = [ compile(e,'<string>','eval') for e in comp_exprs ]
   for t in table.data:
     # Compute the value of tuple elements
     new_tuple = []
-    for sel in c["select_list"]:
+    for (i,sel) in enumerate(c["select_list"]):
       lcs = prior_lcs
       lcs.update(t.getDict())
-      new_tuple.append( eval(sel[0], globals(), lcs))
+      new_tuple.append( eval(comp_exprs[i], globals(), lcs))
 
     # If we have only one element in the select list
     # then the output table will be a sequence of values
@@ -100,12 +104,13 @@ def processSelectClause(c, table, prior_lcs):
 def processForClause(c, table, prior_lcs):
   new_schema = dict(table.schema)
   new_schema[c["var"]] = len(table.schema)
+  comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
 
   new_table = PQTable( new_schema )
   for t in table.data:
     lcs = prior_lcs
     lcs.update(t.getDict())
-    vals = eval(c["expr"], globals(), lcs)
+    vals = eval(comp_expr, globals(), lcs)
     for v in vals:
       new_t_data = list(t.tuple)
       new_t_data.append(v)
@@ -119,11 +124,12 @@ def processForClause(c, table, prior_lcs):
 def processLetClause(c, table, prior_lcs):
   new_schema = dict(table.schema)
   new_schema[ c["var"]] = len(table.schema)
+  comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
   new_table = PQTable( new_schema )
   for t in table.data:
     lcs = prior_lcs
     lcs.update(t.getDict())
-    v = eval(c["expr"], globals(), lcs)
+    v = eval(comp_expr, globals(), lcs)
     new_t = PQTuple( t.tuple + [v], new_schema )
     new_table.data.append(new_t)
   return new_table
@@ -178,10 +184,11 @@ def processGroupByClause(c, table, prior_lcs):
 # Process where clause
 def processWhereClause(c, table, prior_lcs):
   new_table = PQTable(table.schema)
+  comp_expr = compile(c["expr"].lstrip(),"<string>","eval")
   for t in table.data:
     lcs = prior_lcs
     lcs.update(t.getDict())
-    val = eval(c["expr"], globals(), lcs)
+    val = eval(comp_expr, globals(), lcs)
     if val:
       new_table.data.append(t)
 
@@ -193,16 +200,19 @@ def processOrderByClause(c, table, prior_lcs):
   # For each sort we first need to compute a sort value (could
   # be some expression)
 
+  sort_exprs = [ compile(os[0].lstrip(),"<string>","eval") for os in c["orderby_list"]]
+  sort_rev = [ o[1]=='desc' for o in c["orderby_list"]]
+
   def computeSortSpec(tup,sort_spec):
     lcs = prior_lcs
     lcs.update(tup.getDict())
     return eval(sort_spec, globals(), lcs)
 
-  order_list = c["order_list"]
-  order_list = list(order_list).reverse()
-  for sort_spec in order_list:
-    table.data.sort( key = lambda x: computeSortSpec(x,sort_spec[0]),
-         reverse=sort_spec[1]=='desc' )
+  sort_exprs.reverse()
+  sort_rev.reverse()
+  for (i,e) in enumerate(sort_exprs):
+    table.data.sort( key = lambda x: computeSortSpec(x,e),
+         reverse= sort_rev[i])
 
   return table
 
