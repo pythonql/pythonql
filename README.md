@@ -23,4 +23,4 @@ See the grammar description. Some examples will appear here
 
 ## Usage:
 
-python3 pythonql/RunPYQL.py <pythonql program>
+`python3 pythonql/RunPYQL.py <pythonql program>`
