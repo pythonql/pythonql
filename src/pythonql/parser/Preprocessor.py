@@ -195,6 +195,46 @@ def process_count_clause(tree,parser):
 def process_where_clause(tree,parser):
     return mk_tok(["{", '"name":"where"', ",", '"expr"', ":", '"""', get_all_terminals(tree.children[1],parser),'"""',"}"])
 
+# Process the window clause (hairy stuff)
+def get_window_vars(tree,parser,type):
+  res = {}
+  for c in tree.children:
+    if c.getRuleIndex() == parser.RULE_current_item:
+      res[type+"_curr"] = getText(c)
+    if c.getRuleIndex() == parser.RULE_positional_var:
+      res[type+"_at"] = getText(c.children[1])
+    if c.getRuleIndex() == parser.RULE_previous_var:
+      res[type+"_prev"] = getText(c.children[1])
+    if c.getRuleIndex() == parser.RULE_next_var:
+      res[type+"_next"] = getText(c.children[1])
+  return res
+
+def process_window_clause(tree,parser):
+  window = tree.children[0]
+  tumbling = window.getRuleIndex() == parser.RULE_tumbling_window
+  window_var = getText(window.children[3])
+  binding_seq = get_all_terminals(window.children[5],parser)
+  start_vars = get_window_vars(window.children[6].children[1],parser,"s")
+  start_cond = get_all_terminals(window.children[6].children[3],parser)
+  end_vars = {}
+  end_cond = None
+  only = False
+  if len(window.children)==8:
+    end_vars = get_window_vars(window.children[7].children[2],parser,"e")
+    end_cond = get_all_terminals(window.children[7].children[4],parser)
+    if window.children[7].children[0].children:
+      only = True
+
+  start_vars.update( end_vars )
+  var_tokens = [mk_tok([ '"'+k+'"', ":", '"'+start_vars[k]+'"' ]) for k in start_vars ]
+  var_tokens = reduce(lambda x,y: x + mk_tok([","]) + y, var_tokens)
+
+  return mk_tok([ "{", '"name":"window"', "," , '"tumbling"', ":", repr(tumbling), "," '"only"', ":", repr(only), ",",
+			'"in"', ":", '"""', binding_seq, '"""', ",",
+                        '"s_when"', ":", '"""', start_cond, '"""', ",",
+                        mk_tok([ '"e_when"', ":", '"""', end_cond, '"""', ","]) if end_cond else [],
+                        '"vars"', ":", "{", '"var"', ":", '"'+window_var+'"', ",", var_tokens, "}", "}" ])
+                        
 # Process the query. The query is turned into a function call
 # PyQuery that takes all the clauses and evaluates them.
 
@@ -219,6 +259,10 @@ def get_query_terminals(tree,parser):
         clauses.append( process_groupby_clause(c, parser) )
       elif c.getRuleIndex() == parser.RULE_order_by_clause:
         clauses.append( process_orderby_clause(c, parser) )
+      elif c.getRuleIndex() == parser.RULE_window_clause:
+        clauses.append( process_window_clause(c, parser) )
+      else: 
+        raise Exception("Unknown clause encountered")
 
     # Add the select clause at the end
     clauses.append( select_clause )
