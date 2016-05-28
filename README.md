@@ -19,4 +19,8 @@ So we can write path expression in the query language (and elsewhere in Python e
 ```
 
  - Query expressions:
-Grammar TDB
+See the grammar description. Some examples will appear here
+
+## Usage:
+
+python3 pythonql/RunPYQL.py <pythonql program>
