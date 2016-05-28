@@ -1,6 +1,6 @@
-from PQTuple import PQTuple
-from PQTable import PQTable
-from Window import processWindowClause
+from pythonql.PQTuple import PQTuple
+from pythonql.PQTable import PQTable
+from pythonql.Window import processWindowClause
 
 # isList predicate for path expressions
 def isList(x):

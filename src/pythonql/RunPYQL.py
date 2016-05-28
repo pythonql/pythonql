@@ -1,7 +1,7 @@
 import sys
 import tempfile
-from Executor import *
-from parser.Preprocessor import makeProgram
+from pythonql.Executor import *
+from pythonql.parser.Preprocessor import makeProgram
 import subprocess
 
 if len(sys.argv) != 2:

@@ -3,9 +3,9 @@ import re
 from antlr4.Token import CommonToken
 from antlr4 import *
 
-from parser.Errors import IndentationErr
-from parser.PythonQLLexer import PythonQLLexer
-from parser.PythonQLParser import PythonQLParser
+from pythonql.parser.Errors import IndentationErr
+from pythonql.parser.PythonQLLexer import PythonQLLexer
+from pythonql.parser.PythonQLParser import PythonQLParser
 
 #
 # https://docs.python.org/3/reference/lexical_analysis.html#indentation

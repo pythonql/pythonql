@@ -4,7 +4,7 @@ from antlr4.error.ErrorStrategy import DefaultErrorStrategy
 from antlr4.Parser import Parser
 from antlr4.Token import Token
 
-from parser.PythonQLParser import PythonQLParser
+from pythonql.parser.PythonQLParser import PythonQLParser
 
 
 class IndentationErr(RecognitionException):

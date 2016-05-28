@@ -1,7 +1,7 @@
 import sys
 from antlr4 import *
-from CustomLexer import CustomLexer
-from PythonQLParser import PythonQLParser
+from pythonql.parser.CustomLexer import CustomLexer
+from pythonql.parser.PythonQLParser import PythonQLParser
 
 def main(argv):
   inputStream = FileStream(sys.argv[1])

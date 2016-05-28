@@ -3,8 +3,8 @@
 # Its a pretty hairy beast, requires a bunch of helper
 # functions
 
-from PQTuple import PQTuple
-from PQTable import PQTable
+from pythonql.PQTuple import PQTuple
+from pythonql.PQTable import PQTable
 
 # Create the set of variables for a new window
 # This is the full set just for convienience, the
