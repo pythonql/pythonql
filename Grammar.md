@@ -29,16 +29,16 @@ to the fewest possible keywords later on.
 
 ```jflex
 query_expression := select 
-                  (for|let) 
-                  (for|let|where|window|count|groupby|orderby)* ;
+                ( for | let ) 
+                ( for | let | where | window | count | groupby |orderby )* ;
 
 select := ('select'|'return') select_var (',' select_var) * ;
 
 select_var := expr ("as" NAME)? ;
 
-for := ('for'|'from') NAME 'in' expr (',' NAME 'in' expr ) * ;
+for := ( 'for' | 'from' ) NAME 'in' expr (',' NAME 'in' expr ) * ;
 
-let := ('let'|'with') NAME '=' expr (',' NAME '=' expr ) *;
+let := ( 'let' | 'with' ) NAME '=' expr (',' NAME '=' expr ) *;
 
 where := 'where' | 'having' expr ;
 
@@ -46,9 +46,9 @@ count := 'count' NAME;
 
 groupby := 'group' 'by' expr (',' expr) * ;
 
-orderby := 'order' 'by' expr ['asc'|'desc'] (',' expr ['asc'|'desc'] ) *;
+orderby := 'order' 'by' expr ['asc' | 'desc'] (',' expr ['asc' | 'desc'] ) *;
 
-window := 'for' (tumbling_window|sliding_window) ;
+window := 'for' ( tumbling_window | sliding_window ) ;
 
 tubling_window := 'tumbling' 'window' NAME 'in' expr window_start_cond window_end_cond? ;
 
