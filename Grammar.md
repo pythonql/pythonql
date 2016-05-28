@@ -30,9 +30,9 @@ to the fewest possible keywords later on.
 ```jflex
 query_expression := select 
                 ( for | let ) 
-                ( for | let | where | window | count | groupby |orderby )* ;
+                ( for | let | where | window | count | groupby | orderby )* ;
 
-select := ('select'|'return') select_var (',' select_var) * ;
+select := ( 'select' | 'return' ) select_var (',' select_var) * ;
 
 select_var := expr ("as" NAME)? ;
 
