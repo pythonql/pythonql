@@ -42,13 +42,23 @@ let := ('let'|'with') NAME '=' expr (',' NAME '=' expr ) *;
 
 where := 'where' | 'having' expr ;
 
-window := TBD
-
 count := 'count' NAME;
 
 groupby := 'group' 'by' expr (',' expr) * ;
 
 orderby := 'order' 'by' expr ['asc'|'desc'] (',' expr ['asc'|'desc'] ) *;
+
+window := 'for' (tumbling_window|sliding_window) ;
+
+tubling_window := 'tumbling' 'window' NAME 'in' expr window_start_cond window_end_cond? ;
+
+sliding_window := 'sliding' 'window' NAME 'in' expr window_start_cond window_end_cond ;
+
+window_start_cond := 'start' window_vars 'when' expr ;
+
+window_end_cond := 'only'? 'end' window_vars 'when' expr ;
+
+window_vars := NAME? ("at" NAME)? ("previous" NAME)? ("next" NAME)?
 
 ```
 **TODO:** We need to decide if we want to keep the select in the current shape. Or just replace the whole thing with a single expression like in JSONiq or XQuery. The semantics of the select list with mutlitple expressions and aliases right now is to create a PQTuple object, which combines dict(JSON), tuple (native Python tuple) and namedtuple (also avaiable in Python) interfaces. So its pretty cool for relational data, but also can be used for JSONiq and maybe XML (we can make a default mapping from PQTuple to XML.
