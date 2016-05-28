@@ -1,5 +1,6 @@
 from PQTuple import PQTuple
 from PQTable import PQTable
+from Window import processWindowClause
 
 # isList predicate for path expressions
 def isList(x):
@@ -96,6 +97,8 @@ def processClause(c, table, prior_locs):
     return processGroupByClause(c, table, prior_locs)
   elif c["name"] == "orderby":
     return processOrderByClause(c, table, prior_locs)
+  elif c["name"] == "window":
+    return processWindowClause(c, table, prior_locs)
   else:
     raise Exception("Unknown clause %s encountered" % c[0] )
   
@@ -247,18 +250,15 @@ def processOrderByClause(c, table, prior_lcs):
          reverse= sort_rev[i])
 
   return table
-
+  
 if __name__=='__main__':
-  x = [ 1 , 2 , 3 , 4 , 5 ] 
-  y = [ 6 , 7 , 8 , 9 , 10 ] 
+  x = [ 2, 4, 6, 8, 10, 12, 14 ]
   res = PyQuery ( 
-	[{"name":"for", "var":"z", "expr": """ x """ },
-        {"name":"for", "var":"w", "expr": """ y """ }, # From clause
-	{"name":"groupby", "groupby_list": ["z"]},	# Group by clause
-	{"name":"where", "expr":""" z % 2 == 0 """}, # Where clause
-        {"name":"let", "var":"q", "expr": "5**5"},
-	{"name":"select", "select_list": [ ("z", None), ("sum(w)", "WWW"),("q",None) ]},
-	#{"name":"select", "select_list": [ ("sum(w)", "WWW") ]},
+        [{"name":"window", "tumbling":False, "in":"x", "only":False,
+         "vars":{"var":"y", "s_curr":"s_c", "s_at":"s", "s_prev":"s_prev", "s_next":"s_next",
+           "e_curr":"e_c", "e_at":"e", "e_prev":"e_prev", "e_next":"e_next"},
+           "s_when":"True", "e_when":"e-s == 2"},
+	{"name":"select", "select_list": [("y",None)] }
 	],
 	locals())
   print(res)

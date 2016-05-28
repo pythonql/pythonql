@@ -390,6 +390,61 @@ class PythonQLVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PythonQLParser#window_clause.
+    def visitWindow_clause(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#tumbling_window.
+    def visitTumbling_window(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#sliding_window.
+    def visitSliding_window(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#window_start_cond.
+    def visitWindow_start_cond(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#window_end_cond.
+    def visitWindow_end_cond(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#opt_only.
+    def visitOpt_only(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#window_vars.
+    def visitWindow_vars(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#current_item.
+    def visitCurrent_item(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#positional_var.
+    def visitPositional_var(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#previous_var.
+    def visitPrevious_var(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#next_var.
+    def visitNext_var(self, ctx):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PythonQLParser#order_by_clause.
     def visitOrder_by_clause(self, ctx):
         return self.visitChildren(ctx)

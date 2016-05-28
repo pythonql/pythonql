@@ -498,8 +498,9 @@ atom
 // This is our addition to the grammar, the Query Expression
 query_expression: 
   select_clause
-  (for_clause|let_clause)
-  (for_clause|let_clause|group_by_clause|where_clause|order_by_clause|count_clause)*
+  (for_clause|let_clause|window_clause)
+  (for_clause|let_clause|window_clause|
+      group_by_clause|where_clause|order_by_clause|count_clause)*
   ;
 
 select_clause: ('select'|'return') selectvar (',' selectvar)*
@@ -522,6 +523,27 @@ let_clause: ('let'|'with') let_clause_entry (',' let_clause_entry)*
 let_clause_entry
   : NAME '=' test 
   ;
+
+window_clause: tumbling_window | sliding_window;
+
+tumbling_window: 'for' 'tumbling' 'window' NAME 'in' expr
+                 window_start_cond (window_end_cond)?;
+
+sliding_window: 'for' 'sliding' 'window' NAME 'in' expr
+		window_start_cond window_end_cond;
+
+window_start_cond: 'start' window_vars 'when' expr ;
+
+window_end_cond: opt_only 'end' window_vars 'when' expr;
+
+opt_only: ('only')?;
+
+window_vars: current_item? positional_var? previous_var? next_var?;
+
+current_item: NAME;
+positional_var: 'at' NAME;
+previous_var: 'previous' NAME;
+next_var: 'next' NAME;
 
 order_by_clause: 'order' 'by' orderlist
 ;

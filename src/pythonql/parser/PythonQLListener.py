@@ -697,6 +697,105 @@ class PythonQLListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by PythonQLParser#window_clause.
+    def enterWindow_clause(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#window_clause.
+    def exitWindow_clause(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#tumbling_window.
+    def enterTumbling_window(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#tumbling_window.
+    def exitTumbling_window(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#sliding_window.
+    def enterSliding_window(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#sliding_window.
+    def exitSliding_window(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#window_start_cond.
+    def enterWindow_start_cond(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#window_start_cond.
+    def exitWindow_start_cond(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#window_end_cond.
+    def enterWindow_end_cond(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#window_end_cond.
+    def exitWindow_end_cond(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#opt_only.
+    def enterOpt_only(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#opt_only.
+    def exitOpt_only(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#window_vars.
+    def enterWindow_vars(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#window_vars.
+    def exitWindow_vars(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#current_item.
+    def enterCurrent_item(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#current_item.
+    def exitCurrent_item(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#positional_var.
+    def enterPositional_var(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#positional_var.
+    def exitPositional_var(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#previous_var.
+    def enterPrevious_var(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#previous_var.
+    def exitPrevious_var(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#next_var.
+    def enterNext_var(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#next_var.
+    def exitNext_var(self, ctx):
+        pass
+
+
     # Enter a parse tree produced by PythonQLParser#order_by_clause.
     def enterOrder_by_clause(self, ctx):
         pass
