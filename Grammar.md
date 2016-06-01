@@ -20,6 +20,16 @@ Predicate expression is an arbitrary Python expression, but has the following pr
 avaiable for use: `item` if the predicate is applied to list and `key` and `value` if the predicate
 is applied to a map.
 
+## Try-except exception
+Python has great exception handling and actually a lot of Python code heavily depends on it.
+However, Python's exceptions are statements. Hence they cannot be used in path and query 
+expressions. But they are incredibly useful there, so we introduced a simple for of try-except
+expression.
+
+```jflex
+  try_except_expr := 'try' '{' expr '}' 'except' expr ? '{' expr '}'
+```  
+
 ##Query Expression
 This is our main grammar piece. Again, all Python expressions are written as
 `expr` production, instead of `test`. **Caution:** Python community won't like
@@ -44,7 +54,7 @@ where := 'where' | 'having' expr ;
 
 count := 'count' NAME;
 
-groupby := 'group' 'by' expr (',' expr) * ;
+groupby := 'group' 'by' expr ('as' NAME)? (',' expr ('as' NAME)? ) * ;
 
 orderby := 'order' 'by' expr ['asc' | 'desc'] (',' expr ['asc' | 'desc'] ) *;
 
