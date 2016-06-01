@@ -201,25 +201,32 @@ def processCountClause(c, table, prior_lcs):
 
 # Process the group-by
 def processGroupByClause(c, table, prior_lcs):
-  groupby_list = c["groupby_list"]
+  gby_aliases = [g if isinstance(g,str) else g[1]
+                                for g in c["groupby_list"]]
+  gby_exprs = [g if isinstance(g,str) else g[0]
+                                for g in c["groupby_list"]]
+  comp_exprs = [compile(e,'<string>','eval') for e in gby_exprs]
   grp_table = {}
 
   # Group tuples in a hashtable
   for t in table.data:
-    k = tuple( [t[k] for k in groupby_list] )
+    lcs = prior_lcs
+    lcs.update(t.getDict())
+    # Compute the key
+    k = tuple( [eval(e,globals(),lcs) for e in comp_exprs] )
     if not k in grp_table:
       grp_table[k] = []
     grp_table[k].append(t)
 
   # Construct the new table
   # Non-key variables
-  non_key_vars = [v for v in table.schema if not v in groupby_list ]
-  new_schema = {v:i for (i,v) in enumerate( groupby_list + non_key_vars )}
+  non_key_vars = [v for v in table.schema if not v in gby_aliases ]
+  new_schema = {v:i for (i,v) in enumerate( gby_aliases + non_key_vars )}
   new_table = PQTable(new_schema)
   for k in grp_table:
     t = PQTuple([None]*len(new_schema), new_schema)
     #Copy over the key
-    for (i,v) in enumerate(groupby_list):
+    for (i,v) in enumerate(gby_aliases):
       t[v] = k[i]
 
     #Every other variable (not in group by list) is turned into a lists

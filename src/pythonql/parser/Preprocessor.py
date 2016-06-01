@@ -84,6 +84,13 @@ def ruleType(tree,t):
         return False
     return tree.getRuleIndex()==t
 
+def tokType(tree,t):
+    if isinstance(tree,TerminalNodeImpl):
+        return tree.symbol.type==t
+    elif len(tree.children)==1:
+        return tokType(tree.children[0],t)
+    return False
+
 # Get the text of all terminals in the subtree
 def getText(tree):
     if isinstance(tree,TerminalNodeImpl):
@@ -213,7 +220,15 @@ def process_groupby_clause(tree,parser):
     res = []
     groupby_list = tree.children[2]
     for e in [e for e in groupby_list.children if ruleType(e,parser.RULE_group_by_var)]:
-        res.append(mk_tok(['"'+getText(e)+'"']))
+        if len(e.children)==1 and tokType(e.children[0],parser.NAME):
+          res.append(mk_tok(['"'+getText(e)+'"']))
+        else:
+          gby_expr = getTermsEsc(e.children[0],parser)
+          alias = gby_expr
+          if len(e.children)==3:
+             alias = '"'+getText(e.children[2])+'"'
+          res.append(mk_tok(["(", gby_expr, ",", alias, ")"]))
+        
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
     return mk_tok(["{",'"name":"groupby"', "," '"groupby_list"', ":", "[", res, "]", "}"])
 

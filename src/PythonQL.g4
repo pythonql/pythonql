@@ -570,7 +570,7 @@ group_by_vars
   : group_by_var (',' group_by_var)*
   ;
 
-group_by_var: NAME;
+group_by_var: old_test ('as' NAME)?;
 
 where_clause: ('where'|'having') test
 ;
