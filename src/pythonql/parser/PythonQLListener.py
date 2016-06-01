@@ -463,6 +463,24 @@ class PythonQLListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by PythonQLParser#try_catch_expr.
+    def enterTry_catch_expr(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#try_catch_expr.
+    def exitTry_catch_expr(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by PythonQLParser#opt_exception.
+    def enterOpt_exception(self, ctx):
+        pass
+
+    # Exit a parse tree produced by PythonQLParser#opt_exception.
+    def exitOpt_exception(self, ctx):
+        pass
+
+
     # Enter a parse tree produced by PythonQLParser#old_test.
     def enterOld_test(self, ctx):
         pass

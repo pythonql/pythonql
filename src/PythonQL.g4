@@ -347,7 +347,7 @@ suite
 
 // Path step of the query language
 test
- : old_test (path_step)*
+ : try_catch_expr (path_step)*
  ;
 
 path_step
@@ -359,6 +359,13 @@ path_step
 child_path_step: './';
 desc_path_step: './/';
 pred_path_step: '{' test '}';
+
+try_catch_expr
+  : old_test
+  | 'try' '{' old_test '}' 'except' opt_exception '{' old_test '}'
+  ;
+
+opt_exception: old_test?;
 
 /// old_test: or_test ['if' or_test 'else' old_test] | lambdef
 old_test

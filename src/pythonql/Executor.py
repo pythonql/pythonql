@@ -69,6 +69,18 @@ def PQPred_map(coll,pred):
       result[k] = v
   return result
 
+def PQTry( try_expr, except_expr, exc, lcs):
+  if exc:
+    try:
+      return eval(try_expr,lcs,globals())
+    except eval(exc):
+      return eval(except_expr,lcs,globals())
+  else:
+    try:
+      return eval(try_expr,lcs,globals())
+    except:
+      return eval(except_expr,lcs,globals())
+
 # create a table with an empty tuple
 def emptyTuple(schema):
   return PQTuple([None] * len(schema), schema)

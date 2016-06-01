@@ -260,6 +260,16 @@ class PythonQLVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PythonQLParser#try_catch_expr.
+    def visitTry_catch_expr(self, ctx):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PythonQLParser#opt_exception.
+    def visitOpt_exception(self, ctx):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PythonQLParser#old_test.
     def visitOld_test(self, ctx):
         return self.visitChildren(ctx)

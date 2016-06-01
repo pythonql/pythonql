@@ -53,6 +53,12 @@ def isPathExpression(tree,parser):
     return (tree.getRuleIndex()==parser.RULE_test
                 and len(tree.children)>1 )
 
+def isTryExceptExpression(tree,parser):
+    if isinstance(tree,TerminalNodeImpl):
+        return False
+    return (tree.getRuleIndex()==parser.RULE_try_catch_expr
+                and len(tree.children)>1 )
+
 def isQuery(tree,parser):
     if isinstance(tree,TerminalNodeImpl):
         return False
@@ -127,6 +133,19 @@ def get_path_expression_terminals(tree,parser):
             condition = mk_tok([ '"""', get_all_terminals(c,parser)[1:-1], '"""'])
             result = mk_tok([ "PQPred", "(", result, ",", condition, ")"])
     
+    return result
+
+# Convert try-catch expression to Python
+def get_try_except_expression_terminals(tree,parser):
+    children = tree.children
+    try_expr = children[2]
+    exc = children[5] if children[5].children else None
+    except_expr = children[7]
+    exc_tokens = mk_tok(["None"]) if not exc else mk_tok(['"""',get_all_terminals(exc,parser),'"""'])
+ 
+    result = mk_tok(["PQTry", "(",'"' ,get_all_terminals(try_expr,parser),'"',","
+               '"',get_all_terminals(except_expr,parser),'"',",",
+               exc_tokens,",","locals()",")"])
     return result
 
 # Process the select clause
@@ -276,6 +295,8 @@ def get_all_terminals(tree,parser):
         return [tree]
     if isPathExpression(tree,parser):
         return get_path_expression_terminals(tree,parser)
+    elif isTryExceptExpression(tree,parser):
+        return get_try_except_expression_terminals(tree,parser)
     elif isQuery(tree,parser):
         return get_query_terminals(tree,parser)
     else:
