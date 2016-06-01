@@ -1,6 +1,6 @@
 x = [2, 4, 6, 8, 10, 12, 14]
 
-res = ( select y, sum(y)
+res = ( select y, sum(y) as z
         for sliding window y in x
         start at s when True
         end at e when (e-s == 2) )

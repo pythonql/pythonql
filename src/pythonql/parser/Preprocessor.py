@@ -162,12 +162,13 @@ def process_select_clause(tree,parser):
     sel_vars = [c for c in tree.children if ruleType(c,parser.RULE_selectvar)]
     res = []
     for v in sel_vars:
-      value_toks = mk_tok([getTermsEsc(v,parser)])
       if len(v.children)==1:
+        value_toks = mk_tok([getTermsEsc(v,parser)])
         res.append(mk_tok(["(", value_toks, ",", "None",")"]))
       else:
         value = v.children[0]
         alias = v.children[2]
+        value_toks = mk_tok([getTermsEsc(value,parser)])
         alias_toks = mk_tok([getTermsEsc(alias,parser)])
         res.append(mk_tok(["(", value_toks, ",", alias_toks,")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
