@@ -5,6 +5,7 @@ from parser.CustomLexer import CustomLexer
 from parser.Errors import CustomErrorStrategy, CustomErrorListener, BufferedErrorListener
 from parser.PythonQLParser import PythonQLParser
 from functools import reduce
+import time
 
 # The preprocessor inserts tokens into
 # the token stream, produced by traversing
@@ -93,6 +94,14 @@ def getText(tree):
             res += getText(c)
         return res
 
+def getTextList(trees):
+    return " ".join([getText(t) for t in trees])
+
+def getTermsEsc(tree,parser):
+    str = getTextList( get_all_terminals(tree,parser ) )
+    str = str.replace('"', '\\"')
+    return '\"' + str + '\"'
+
 # Get all top non-terminals from the tree of specific types
 def getAllNodes(tree,rule_list):
   if isinstance(tree,TerminalNodeImpl):
@@ -130,8 +139,8 @@ def get_path_expression_terminals(tree,parser):
         elif isDescStep(c,parser):
             result = mk_tok([ "PQDescPath", "(", result, ")"])
         elif isPredStep(c,parser):
-            condition = mk_tok([ '"""', get_all_terminals(c,parser)[1:-1], '"""'])
-            result = mk_tok([ "PQPred", "(", result, ",", condition, ")"])
+            condition = mk_tok([ getTextList(get_all_terminals(c,parser)[1:-1]).replace('"', '\\"') ])
+            result = mk_tok([ "PQPred", "(", result, ",", '"', condition, '"',")"])
     
     return result
 
@@ -141,10 +150,10 @@ def get_try_except_expression_terminals(tree,parser):
     try_expr = children[2]
     exc = children[5] if children[5].children else None
     except_expr = children[7]
-    exc_tokens = mk_tok(["None"]) if not exc else mk_tok(['"""',get_all_terminals(exc,parser),'"""'])
+    exc_tokens = mk_tok(["None"]) if not exc else mk_tok([ getTermsEsc(exc,parser) ])
  
-    result = mk_tok(["PQTry", "(",'"' ,get_all_terminals(try_expr,parser),'"',","
-               '"',get_all_terminals(except_expr,parser),'"',",",
+    result = mk_tok(["PQTry", "(", getTermsEsc(try_expr,parser), ",",
+               getTermsEsc(except_expr,parser), ",",
                exc_tokens,",","locals()",")"])
     return result
 
@@ -153,13 +162,13 @@ def process_select_clause(tree,parser):
     sel_vars = [c for c in tree.children if ruleType(c,parser.RULE_selectvar)]
     res = []
     for v in sel_vars:
-      value_toks = mk_tok(['"""',get_all_terminals(v,parser),'"""'])
+      value_toks = mk_tok([getTermsEsc(v,parser)])
       if len(v.children)==1:
         res.append(mk_tok(["(", value_toks, ",", "None",")"]))
       else:
         value = v.children[0]
         alias = v.children[2]
-        alias_toks = mk_tok(['"""',get_all_terminals(alias,parser),'"""'])
+        alias_toks = mk_tok([getTermsEsc(alias,parser)])
         res.append(mk_tok(["(", value_toks, ",", alias_toks,")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
     return mk_tok(["{",'"name":"select"', ",", '"select_list"', ":" , "[", res, "]", "}"])
@@ -170,8 +179,8 @@ def process_for_clause(tree,parser):
     res = []
     for cl in clauses:
         variable = '"'+getText(cl.children[0])+'"'
-        expression = get_all_terminals(cl.children[2],parser)
-        clause_tokens =  mk_tok(["{", '"name":"for"', ",", '"var"', ":", variable, ",", '"expr"', ":", '"""', expression, '"""',"}"]) 
+        expression = getTermsEsc(cl.children[2],parser)
+        clause_tokens =  mk_tok(["{", '"name":"for"', ",", '"var"', ":", variable, ",", '"expr"', ":", expression,"}"]) 
         res.append(clause_tokens)
     return res
 
@@ -181,8 +190,8 @@ def process_let_clause(tree,parser):
     res = []
     for cl in clauses:
         variable = '"'+getText(cl.children[0])+'"'
-        expression = get_all_terminals(cl.children[2],parser)
-        clause_tokens =  mk_tok(["{", '"name":"let"', ",", '"var"', ":", variable, ",", '"expr"', ":", '"""', expression, '"""',"}"]) 
+        expression = getTermsEsc(cl.children[2],parser)
+        clause_tokens =  mk_tok(["{", '"name":"let"', ",", '"var"', ":", variable, ",", '"expr"', ":", expression,"}"]) 
         res.append(clause_tokens)
     return res
 
@@ -194,7 +203,7 @@ def process_orderby_clause(tree,parser):
     for e in elements:
         ascdesc = "asc" if len(e.children)==1 else getText(e.children[1])
         ascdesc = '"'+ascdesc+'"'
-        res.append(mk_tok(["(", '"""',get_all_terminals(e.children[0],parser),'"""',",", ascdesc, ")"]))
+        res.append(mk_tok(["(", getTermsEsc(e.children[0],parser),",", ascdesc, ")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
     return mk_tok(["{",'"name":"orderby"', "," '"orderby_list"', ":" , "[", res, "]", "}"])
 
@@ -212,7 +221,7 @@ def process_count_clause(tree,parser):
 
 # Process the where clause (this is easy)
 def process_where_clause(tree,parser):
-    return mk_tok(["{", '"name":"where"', ",", '"expr"', ":", '"""', get_all_terminals(tree.children[1],parser),'"""',"}"])
+    return mk_tok(["{", '"name":"where"', ",", '"expr"', ":", getTermsEsc(tree.children[1],parser),"}"])
 
 # Process the window clause (hairy stuff)
 def get_window_vars(tree,parser,type):
@@ -232,15 +241,15 @@ def process_window_clause(tree,parser):
   window = tree.children[0]
   tumbling = window.getRuleIndex() == parser.RULE_tumbling_window
   window_var = getText(window.children[3])
-  binding_seq = get_all_terminals(window.children[5],parser)
+  binding_seq = getTermsEsc(window.children[5],parser)
   start_vars = get_window_vars(window.children[6].children[1],parser,"s")
-  start_cond = get_all_terminals(window.children[6].children[3],parser)
+  start_cond = getTermsEsc(window.children[6].children[3],parser)
   end_vars = {}
   end_cond = None
   only = False
   if len(window.children)==8:
     end_vars = get_window_vars(window.children[7].children[2],parser,"e")
-    end_cond = get_all_terminals(window.children[7].children[4],parser)
+    end_cond = getTermsEsc(window.children[7].children[4],parser)
     if window.children[7].children[0].children:
       only = True
 
@@ -249,9 +258,9 @@ def process_window_clause(tree,parser):
   var_tokens = reduce(lambda x,y: x + mk_tok([","]) + y, var_tokens)
 
   return mk_tok([ "{", '"name":"window"', "," , '"tumbling"', ":", repr(tumbling), "," '"only"', ":", repr(only), ",",
-			'"in"', ":", '"""', binding_seq, '"""', ",",
-                        '"s_when"', ":", '"""', start_cond, '"""', ",",
-                        mk_tok([ '"e_when"', ":", '"""', end_cond, '"""', ","]) if end_cond else [],
+			'"in"', ":", binding_seq, ",",
+                        '"s_when"', ":", start_cond, ",",
+                        mk_tok([ '"e_when"', ":", end_cond, ","]) if end_cond else [],
                         '"vars"', ":", "{", '"var"', ":", '"'+window_var+'"', ",", var_tokens, "}", "}" ])
                         
 # Process the query. The query is turned into a function call

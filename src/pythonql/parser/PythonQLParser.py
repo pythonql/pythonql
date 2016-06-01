@@ -2,15 +2,6 @@
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
-package = globals().get("__package__", None)
-ischild = len(package)>0 if package is not None else False
-if ischild:
-    from .PythonQLListener import PythonQLListener
-    from .PythonQLVisitor import PythonQLVisitor
-else:
-    from PythonQLListener import PythonQLListener
-    from PythonQLVisitor import PythonQLVisitor
-
 def serializedATN():
     with StringIO() as buf:
         buf.write("\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3v")
@@ -1021,20 +1012,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_single_input
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSingle_input(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSingle_input(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSingle_input(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1099,20 +1076,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_file_input
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterFile_input(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitFile_input(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitFile_input(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1176,20 +1139,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_eval_input
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterEval_input(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitEval_input(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitEval_input(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1241,20 +1190,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_decorator
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDecorator(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDecorator(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDecorator(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1312,20 +1247,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_decorators
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDecorators(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDecorators(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDecorators(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1376,20 +1297,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_decorated
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDecorated(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDecorated(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDecorated(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1450,20 +1357,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_funcdef
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterFuncdef(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitFuncdef(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitFuncdef(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1513,20 +1406,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_parameters
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterParameters(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitParameters(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitParameters(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1579,20 +1458,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_typedargslist
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTypedargslist(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTypedargslist(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTypedargslist(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -1783,20 +1648,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_tfpdef
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTfpdef(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTfpdef(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTfpdef(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -1848,20 +1699,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_varargslist
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterVarargslist(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitVarargslist(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitVarargslist(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2048,20 +1885,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_vfpdef
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterVfpdef(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitVfpdef(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitVfpdef(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2097,20 +1920,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterStmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitStmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitStmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2161,20 +1970,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_simple_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSimple_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSimple_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSimple_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2258,20 +2053,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_small_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSmall_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSmall_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSmall_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2371,20 +2152,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_expr_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterExpr_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitExpr_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitExpr_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2475,20 +2242,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_testlist_star_expr
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTestlist_star_expr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTestlist_star_expr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTestlist_star_expr(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2561,20 +2314,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_augassign
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterAugassign(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitAugassign(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitAugassign(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2615,20 +2354,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_del_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDel_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDel_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDel_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2661,20 +2386,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_pass_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterPass_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitPass_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitPass_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2723,20 +2434,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_flow_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterFlow_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitFlow_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitFlow_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2796,20 +2493,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_break_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterBreak_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitBreak_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitBreak_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2840,20 +2523,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_continue_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterContinue_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitContinue_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitContinue_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2889,20 +2558,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_return_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterReturn_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitReturn_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitReturn_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -2944,20 +2599,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_yield_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterYield_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitYield_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitYield_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -2998,20 +2639,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_raise_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterRaise_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitRaise_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitRaise_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3066,20 +2693,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_import_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterImport_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitImport_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitImport_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3127,20 +2740,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_import_name
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterImport_name(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitImport_name(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitImport_name(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3184,20 +2783,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_import_from
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterImport_from(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitImport_from(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitImport_from(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3301,20 +2886,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_import_as_name
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterImport_as_name(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitImport_as_name(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitImport_as_name(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3363,20 +2934,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_dotted_as_name
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDotted_as_name(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDotted_as_name(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDotted_as_name(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3421,20 +2978,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_import_as_names
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterImport_as_names(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitImport_as_names(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitImport_as_names(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3492,20 +3035,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_dotted_as_names
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDotted_as_names(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDotted_as_names(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDotted_as_names(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3552,20 +3081,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_dotted_name
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDotted_name(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDotted_name(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDotted_name(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3616,20 +3131,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_global_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterGlobal_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitGlobal_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitGlobal_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3683,20 +3184,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_nonlocal_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterNonlocal_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitNonlocal_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitNonlocal_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -3749,20 +3236,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_assert_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterAssert_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitAssert_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitAssert_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3835,20 +3308,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_compound_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterCompound_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitCompound_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitCompound_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -3946,20 +3405,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_if_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterIf_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitIf_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitIf_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4039,20 +3484,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_while_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterWhile_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitWhile_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitWhile_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4122,20 +3553,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_for_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterFor_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitFor_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitFor_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4209,20 +3626,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_try_stmt
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTry_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTry_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTry_stmt(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4324,20 +3727,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_with_stmt
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterWith_stmt(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitWith_stmt(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitWith_stmt(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4396,20 +3785,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_with_item
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterWith_item(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitWith_item(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitWith_item(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4460,20 +3835,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_except_clause
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterExcept_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitExcept_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitExcept_clause(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4539,20 +3900,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_suite
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSuite(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSuite(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSuite(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4622,20 +3969,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_test
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTest(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTest(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTest(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4687,20 +4020,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_path_step
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterPath_step(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitPath_step(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitPath_step(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4747,20 +4066,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_child_path_step
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterChild_path_step(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitChild_path_step(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitChild_path_step(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -4789,20 +4094,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_desc_path_step
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDesc_path_step(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDesc_path_step(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDesc_path_step(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4835,20 +4126,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_pred_path_step
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterPred_path_step(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitPred_path_step(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitPred_path_step(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4892,20 +4169,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_try_catch_expr
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTry_catch_expr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTry_catch_expr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTry_catch_expr(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -4967,20 +4230,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_opt_exception
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterOpt_exception(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitOpt_exception(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitOpt_exception(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5034,20 +4283,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_old_test
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterOld_test(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitOld_test(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitOld_test(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5110,20 +4345,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_test_nocond
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTest_nocond(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTest_nocond(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTest_nocond(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5175,20 +4396,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_lambdef
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterLambdef(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitLambdef(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitLambdef(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5239,20 +4446,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_lambdef_nocond
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterLambdef_nocond(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitLambdef_nocond(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitLambdef_nocond(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5306,20 +4499,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_or_test
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterOr_test(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitOr_test(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitOr_test(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5375,20 +4554,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_and_test
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterAnd_test(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitAnd_test(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitAnd_test(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5440,20 +4605,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_not_test
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterNot_test(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitNot_test(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitNot_test(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5511,20 +4662,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_comparison
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterComparison(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitComparison(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitComparison(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5574,20 +4711,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_comp_op
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterComp_op(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitComp_op(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitComp_op(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5691,20 +4814,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_star_expr
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterStar_expr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitStar_expr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitStar_expr(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5747,20 +4856,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_expr
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterExpr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitExpr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitExpr(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -5810,20 +4905,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_xor_expr
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterXor_expr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitXor_expr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitXor_expr(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5872,20 +4953,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_and_expr
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterAnd_expr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitAnd_expr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitAnd_expr(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -5933,20 +5000,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_shift_expr
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterShift_expr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitShift_expr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitShift_expr(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6009,20 +5062,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_arith_expr
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterArith_expr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitArith_expr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitArith_expr(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -6083,20 +5122,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_term
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTerm(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTerm(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTerm(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6178,20 +5203,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_factor
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterFactor(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitFactor(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitFactor(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -6262,20 +5273,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_power
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterPower(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitPower(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitPower(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6363,20 +5360,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_atom
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterAtom(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitAtom(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitAtom(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6561,20 +5544,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_query_expression
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterQuery_expression(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitQuery_expression(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitQuery_expression(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -6675,20 +5644,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_select_clause
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSelect_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSelect_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSelect_clause(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -6743,20 +5698,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_selectvar
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSelectvar(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSelectvar(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSelectvar(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -6801,20 +5742,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_for_clause
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterFor_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitFor_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitFor_clause(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6871,20 +5798,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_for_clause_entry
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterFor_clause_entry(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitFor_clause_entry(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitFor_clause_entry(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -6923,20 +5836,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_let_clause
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterLet_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitLet_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitLet_clause(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -6993,20 +5892,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_let_clause_entry
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterLet_clause_entry(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitLet_clause_entry(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitLet_clause_entry(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7046,20 +5931,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_window_clause
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterWindow_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitWindow_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitWindow_clause(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7115,20 +5986,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_tumbling_window
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTumbling_window(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTumbling_window(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTumbling_window(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7192,20 +6049,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_sliding_window
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSliding_window(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSliding_window(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSliding_window(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7256,20 +6099,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_window_start_cond
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterWindow_start_cond(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitWindow_start_cond(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitWindow_start_cond(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7316,20 +6145,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_window_end_cond
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterWindow_end_cond(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitWindow_end_cond(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitWindow_end_cond(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7366,20 +6181,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_opt_only
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterOpt_only(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitOpt_only(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitOpt_only(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7430,20 +6231,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_window_vars
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterWindow_vars(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitWindow_vars(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitWindow_vars(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7503,20 +6290,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_current_item
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterCurrent_item(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitCurrent_item(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitCurrent_item(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7547,20 +6320,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_positional_var
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterPositional_var(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitPositional_var(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitPositional_var(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7595,20 +6354,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_previous_var
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterPrevious_var(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitPrevious_var(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitPrevious_var(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7641,20 +6386,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_next_var
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterNext_var(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitNext_var(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitNext_var(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7689,20 +6420,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_order_by_clause
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterOrder_by_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitOrder_by_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitOrder_by_clause(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7742,20 +6459,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_orderlist
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterOrderlist(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitOrderlist(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitOrderlist(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7802,20 +6505,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_orderlist_el
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterOrderlist_el(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitOrderlist_el(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitOrderlist_el(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7860,20 +6549,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_group_by_clause
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterGroup_by_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitGroup_by_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitGroup_by_clause(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -7912,20 +6587,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_group_by_vars
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterGroup_by_vars(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitGroup_by_vars(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitGroup_by_vars(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -7971,20 +6632,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_group_by_var
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterGroup_by_var(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitGroup_by_var(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitGroup_by_var(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -8016,20 +6663,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_where_clause
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterWhere_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitWhere_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitWhere_clause(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8068,20 +6701,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_count_clause
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterCount_clause(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitCount_clause(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitCount_clause(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8123,20 +6742,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_testlist_comp
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTestlist_comp(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTestlist_comp(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTestlist_comp(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8209,20 +6814,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_trailer
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTrailer(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTrailer(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTrailer(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -8291,20 +6882,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_subscriptlist
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSubscriptlist(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSubscriptlist(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSubscriptlist(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -8364,20 +6941,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_subscript
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSubscript(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSubscript(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSubscript(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8445,20 +7008,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_sliceop
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterSliceop(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitSliceop(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitSliceop(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -8501,20 +7050,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_exprlist
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterExprlist(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitExprlist(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitExprlist(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8571,20 +7106,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_testlist
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterTestlist(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitTestlist(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitTestlist(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8645,20 +7166,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_dictorsetmaker
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterDictorsetmaker(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitDictorsetmaker(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitDictorsetmaker(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8785,20 +7292,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_classdef
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterClassdef(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitClassdef(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitClassdef(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -8863,20 +7356,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_arglist
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterArglist(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitArglist(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitArglist(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -8982,20 +7461,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_argument
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterArgument(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitArgument(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitArgument(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -9056,20 +7521,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_comp_iter
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterComp_iter(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitComp_iter(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitComp_iter(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -9128,20 +7579,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_comp_for
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterComp_for(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitComp_for(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitComp_for(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -9195,20 +7632,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_comp_if
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterComp_if(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitComp_if(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitComp_if(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -9253,20 +7676,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_yield_expr
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterYield_expr(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitYield_expr(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitYield_expr(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -9314,20 +7723,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_yield_arg
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterYield_arg(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitYield_arg(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitYield_arg(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -9377,20 +7772,6 @@ class PythonQLParser ( Parser ):
         def getRuleIndex(self):
             return PythonQLParser.RULE_string
 
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterString(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitString(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitString(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -9433,20 +7814,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_number
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterNumber(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitNumber(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitNumber(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -9504,20 +7871,6 @@ class PythonQLParser ( Parser ):
 
         def getRuleIndex(self):
             return PythonQLParser.RULE_integer
-
-        def enterRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.enterInteger(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if isinstance( listener, PythonQLListener ):
-                listener.exitInteger(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if isinstance( visitor, PythonQLVisitor ):
-                return visitor.visitInteger(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
