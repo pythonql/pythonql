@@ -8,7 +8,9 @@ def str_dec(str):
 
 # isList predicate for path expressions
 def isList(x):
-  return hasattr(x,'__iter__') and not hasattr(x,'keys')
+  return (hasattr(x,'__iter__') and not 
+          hasattr(x,'keys') and not
+          isinstance(x,str))
 
 # isMap predicate for path expression
 def isMap(x):
