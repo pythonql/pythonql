@@ -15,13 +15,11 @@ ords = [ ord(1,1,"16.54"),
 
 custs = [ cust(1,"John"), cust(2,"Dave"), cust(3,"Boris") ]
 
-res = (select cust_name, sum(price)
+res = (select name, sum(price)
         for o in ords
         let price = try{ float(o.price) } except {0}
         for c in custs
-        let cust_id = c.cust_id,
-            cust_name = c.cust_name
         where c.cust_id == o.cust_id
-        group by cust_id, cust_name )
+        group by c.cust_id as id, c.cust_name as name)
         
 print (res)
