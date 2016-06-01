@@ -25,7 +25,44 @@ So we can write path expression in the query language (and elsewhere in Python e
 ```
 
  - Query expressions:
-See the grammar description. Some examples will appear here
+We have a syntax that looks similar to SQL, but is more flexible and of course most of the expressions in the query are
+in pure Python. Here is an example PythonQL program:
+
+```Python
+# This example illustrates the try-catch business in PythonQL.
+# Basically, some data might be dirty, but you still want to be able to write a simple query
+
+from collections import namedtuple
+ord = namedtuple('Order', ['cust_id','prod_id','price'])
+cust = namedtuple('Cust', ['cust_id','cust_name'])
+
+ords = [ ord(1,1,"16.54"),
+         ord(1,2,"18.95"),
+         ord(1,5,"8.96"),
+         ord(2,1,"????"),
+         ord(2,2,"20.00") ]
+
+custs = [ cust(1,"John"), cust(2,"Dave"), cust(3,"Boris") ]
+
+# Basic SQL query, but with some data cleaning
+res = (select name, sum(price) as sum
+        for o in ords
+        let price = try{ float(o.price) } except {0}
+        for c in custs
+        where c.cust_id == o.cust_id
+        group by c.cust_id as id, c.cust_name as name)
+
+print (res)
+
+# Funny query, lets count how many integers there are everywhere in the data
+res = ( select x
+        for x in ords .//
+        let y = try { True if int(x) else False } except { False }
+        where y
+        )
+
+print (len(res))
+```
 
 ## Usage:
 
