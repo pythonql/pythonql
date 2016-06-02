@@ -347,7 +347,7 @@ def makeProgramFromTextTokens(tokens):
     buffer = ""
     for t in tokens:
         if buffer!="":
-            if t==' ' or t=='\n':
+            if t==' ' or t=='\n' or t=='\r\n':
                 result += buffer + '\n'
                 buffer = ""
             else:
@@ -355,7 +355,7 @@ def makeProgramFromTextTokens(tokens):
         else:
             if t==' ':
                 indent = indent -1
-            elif t=='\n':
+            elif t=='\n' or t=='\r\n':
                 indent -= 1
                 indent = indent if indent>=0 else 0
             elif all_ws(t):
@@ -374,5 +374,6 @@ def makeProgramFromString(str):
   (tree,parser) = parsePythonQL(str)
   all_terminals = get_all_terminals(tree,parser)
   text_tokens = [t.getText() for t in all_terminals]
+  print(text_tokens)
   return makeProgramFromTextTokens(text_tokens)
 

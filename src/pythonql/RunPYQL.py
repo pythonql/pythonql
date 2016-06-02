@@ -2,6 +2,7 @@ import sys
 import tempfile
 from pythonql.Executor import *
 from pythonql.parser.Preprocessor import makeProgramFromFile
+from pythonql.parser.Preprocessor import makeProgramFromString
 import time
 
 def runProgramFromFile(fname):
