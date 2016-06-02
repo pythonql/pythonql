@@ -1,9 +1,9 @@
 import sys
 from antlr4 import *
 from antlr4.tree.Tree import *
-from parser.CustomLexer import CustomLexer
-from parser.Errors import CustomErrorStrategy, CustomErrorListener, BufferedErrorListener
-from parser.PythonQLParser import PythonQLParser
+from pythonql.parser.CustomLexer import CustomLexer
+from pythonql.parser.Errors import CustomErrorStrategy, CustomErrorListener, BufferedErrorListener
+from pythonql.parser.PythonQLParser import PythonQLParser
 from functools import reduce
 import time
 
