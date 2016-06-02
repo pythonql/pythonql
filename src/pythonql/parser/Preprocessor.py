@@ -374,6 +374,5 @@ def makeProgramFromString(str):
   (tree,parser) = parsePythonQL(str)
   all_terminals = get_all_terminals(tree,parser)
   text_tokens = [t.getText() for t in all_terminals]
-  print(text_tokens)
   return makeProgramFromTextTokens(text_tokens)
 
