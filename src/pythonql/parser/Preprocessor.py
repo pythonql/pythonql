@@ -17,9 +17,9 @@ class MyToken(TerminalNodeImpl):
         return self.text
 
 # Parse the PythonQL file and return a parse tree
-def parsePythonQL( f ):
+def parsePythonQL( s ):
   # Set up the lexer
-  inputStream = FileStream(f)
+  inputStream = InputStream(s)
   lexer = CustomLexer(inputStream)
   stream = CommonTokenStream(lexer)
 
@@ -366,8 +366,13 @@ def makeProgramFromTextTokens(tokens):
     return result
 
 # Generate a program from a parse tree
-def makeProgram(fname):
-  (tree,parser) = parsePythonQL(fname)
+def makeProgramFromFile(fname):
+  str = "".join( open(fname).readlines() )
+  return makeProgramFromString(str)
+
+def makeProgramFromString(str):
+  (tree,parser) = parsePythonQL(str)
   all_terminals = get_all_terminals(tree,parser)
   text_tokens = [t.getText() for t in all_terminals]
   return makeProgramFromTextTokens(text_tokens)
+
