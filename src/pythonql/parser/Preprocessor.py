@@ -7,6 +7,19 @@ from pythonql.parser.PythonQLParser import PythonQLParser
 from functools import reduce
 import time
 
+def str_encode(string):
+    res = ""
+    for ch in string:
+        if ch == '"':
+            res += chr(92)
+            res += '"'
+        elif ch == chr(92):
+            res += chr(92)
+            res += chr(92)
+        else:
+            res += ch
+    return res
+
 # The preprocessor inserts tokens into
 # the token stream, produced by traversing
 # the parse tree.
@@ -106,7 +119,7 @@ def getTextList(trees):
 
 def getTermsEsc(tree,parser):
     str = getTextList( get_all_terminals(tree,parser ) )
-    str = str.replace('"', '\\"')
+    str = str_encode(str)
     return '\"' + str + '\"'
 
 # Get all top non-terminals from the tree of specific types
