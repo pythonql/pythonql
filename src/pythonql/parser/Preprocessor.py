@@ -1,6 +1,9 @@
 import sys
 from antlr4 import *
 from antlr4.tree.Tree import *
+from antlr4.atn.PredictionMode import PredictionMode
+from antlr4.error.ErrorStrategy import BailErrorStrategy
+
 from pythonql.parser.CustomLexer import CustomLexer
 from pythonql.parser.Errors import CustomErrorStrategy, CustomErrorListener, BufferedErrorListener
 from pythonql.parser.PythonQLParser import PythonQLParser
@@ -42,7 +45,20 @@ def parsePythonQL( s ):
   buffered_errors = BufferedErrorListener()
   error_listener.addDelegatee(buffered_errors)
 
-  # Set up the parser
+  # Set up the fast parser
+  parser = PythonQLParser(stream)
+  parser._interp.predictionMode = PredictionMode.SLL
+  parser.removeErrorListeners()
+  parser.errHandler = BailErrorStrategy()
+
+  try:
+    tree = parser.file_input()
+    return (tree,parser)
+  except:
+    None
+
+  lexer.reset()
+  stream = CommonTokenStream(lexer)
   parser = PythonQLParser(stream)
   parser.errHandler = error_handler
 
