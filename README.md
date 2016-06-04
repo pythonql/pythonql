@@ -1,5 +1,5 @@
 # pythonql
-A LINQ type extension to Python that allows language-integrated queries against relational, XML and JSON data, as well an Python's collections
+PythonQL is an extension to Python that allows language-integrated queries against relational, XML and JSON data, as well an Python's collections
 
 
 Python has pretty advanced comprehensions, that cover a big chunk of SQL, to the point where PonyORM was able to build a whole ORM system based on comprehensions. However, group by mechanisms, outerjoins and support for semi-structured data are not handled well at all.
@@ -26,7 +26,7 @@ So we can write path expression in the query language (and elsewhere in Python e
 
  - Query expressions:
 We have a syntax that looks similar to SQL, but is more flexible and of course most of the expressions in the query are
-in pure Python. Here is an example PythonQL program:
+in pure Python. A lot of functionality is cleaner, than in SQL, like the window queries, subqueries in general, etc. Here is a small example PythonQL program (we're building a demo website with a number of scenarios that are especially good for solving with PythonQL):
 
 ```Python
 # This example illustrates the try-catch business in PythonQL.
