@@ -198,7 +198,8 @@ def processLetClause(c, table, prior_lcs):
     lcs = prior_lcs
     lcs.update(t.getDict())
     v = eval(comp_expr, globals(), lcs)
-    new_t = PQTuple( t.tuple + [v], new_schema )
+    t.tuple.append(v)
+    new_t = PQTuple( t.tuple, new_schema )
     new_table.data.append(new_t)
   return new_table
 
