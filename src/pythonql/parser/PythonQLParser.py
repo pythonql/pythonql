@@ -514,35 +514,35 @@ def serializedATN():
         buf.write("\u03ff\5\u00a4S\2\u03fe\u03fc\3\2\2\2\u03fe\u03fd\3\2")
         buf.write("\2\2\u03ff\u00a1\3\2\2\2\u0400\u0401\7&\2\2\u0401\u0402")
         buf.write("\7\7\2\2\u0402\u0403\7\b\2\2\u0403\u0404\7;\2\2\u0404")
-        buf.write("\u0405\7\'\2\2\u0405\u0406\5\u0080A\2\u0406\u0408\5\u00a6")
+        buf.write("\u0405\7\'\2\2\u0405\u0406\5^\60\2\u0406\u0408\5\u00a6")
         buf.write("T\2\u0407\u0409\5\u00a8U\2\u0408\u0407\3\2\2\2\u0408\u0409")
         buf.write("\3\2\2\2\u0409\u00a3\3\2\2\2\u040a\u040b\7&\2\2\u040b")
         buf.write("\u040c\7\t\2\2\u040c\u040d\7\b\2\2\u040d\u040e\7;\2\2")
-        buf.write("\u040e\u040f\7\'\2\2\u040f\u0410\5\u0080A\2\u0410\u0411")
-        buf.write("\5\u00a6T\2\u0411\u0412\5\u00a8U\2\u0412\u00a5\3\2\2\2")
-        buf.write("\u0413\u0414\7\n\2\2\u0414\u0415\5\u00acW\2\u0415\u0416")
-        buf.write("\7\13\2\2\u0416\u0417\5\u0080A\2\u0417\u00a7\3\2\2\2\u0418")
-        buf.write("\u0419\5\u00aaV\2\u0419\u041a\7\f\2\2\u041a\u041b\5\u00ac")
-        buf.write("W\2\u041b\u041c\7\13\2\2\u041c\u041d\5\u0080A\2\u041d")
-        buf.write("\u00a9\3\2\2\2\u041e\u0420\7\r\2\2\u041f\u041e\3\2\2\2")
-        buf.write("\u041f\u0420\3\2\2\2\u0420\u00ab\3\2\2\2\u0421\u0423\5")
-        buf.write("\u00aeX\2\u0422\u0421\3\2\2\2\u0422\u0423\3\2\2\2\u0423")
-        buf.write("\u0425\3\2\2\2\u0424\u0426\5\u00b0Y\2\u0425\u0424\3\2")
-        buf.write("\2\2\u0425\u0426\3\2\2\2\u0426\u0428\3\2\2\2\u0427\u0429")
-        buf.write("\5\u00b2Z\2\u0428\u0427\3\2\2\2\u0428\u0429\3\2\2\2\u0429")
-        buf.write("\u042b\3\2\2\2\u042a\u042c\5\u00b4[\2\u042b\u042a\3\2")
-        buf.write("\2\2\u042b\u042c\3\2\2\2\u042c\u00ad\3\2\2\2\u042d\u042e")
-        buf.write("\7;\2\2\u042e\u00af\3\2\2\2\u042f\u0430\7\16\2\2\u0430")
-        buf.write("\u0431\7;\2\2\u0431\u00b1\3\2\2\2\u0432\u0433\7\17\2\2")
-        buf.write("\u0433\u0434\7;\2\2\u0434\u00b3\3\2\2\2\u0435\u0436\7")
-        buf.write("\20\2\2\u0436\u0437\7;\2\2\u0437\u00b5\3\2\2\2\u0438\u0439")
-        buf.write("\7\21\2\2\u0439\u043a\7\22\2\2\u043a\u043b\5\u00b8]\2")
-        buf.write("\u043b\u00b7\3\2\2\2\u043c\u0441\5\u00ba^\2\u043d\u043e")
-        buf.write("\7I\2\2\u043e\u0440\5\u00ba^\2\u043f\u043d\3\2\2\2\u0440")
-        buf.write("\u0443\3\2\2\2\u0441\u043f\3\2\2\2\u0441\u0442\3\2\2\2")
-        buf.write("\u0442\u00b9\3\2\2\2\u0443\u0441\3\2\2\2\u0444\u0446\5")
-        buf.write("^\60\2\u0445\u0447\t\7\2\2\u0446\u0445\3\2\2\2\u0446\u0447")
-        buf.write("\3\2\2\2\u0447\u00bb\3\2\2\2\u0448\u0449\7\25\2\2\u0449")
+        buf.write("\u040e\u040f\7\'\2\2\u040f\u0410\5^\60\2\u0410\u0411\5")
+        buf.write("\u00a6T\2\u0411\u0412\5\u00a8U\2\u0412\u00a5\3\2\2\2\u0413")
+        buf.write("\u0414\7\n\2\2\u0414\u0415\5\u00acW\2\u0415\u0416\7\13")
+        buf.write("\2\2\u0416\u0417\5^\60\2\u0417\u00a7\3\2\2\2\u0418\u0419")
+        buf.write("\5\u00aaV\2\u0419\u041a\7\f\2\2\u041a\u041b\5\u00acW\2")
+        buf.write("\u041b\u041c\7\13\2\2\u041c\u041d\5^\60\2\u041d\u00a9")
+        buf.write("\3\2\2\2\u041e\u0420\7\r\2\2\u041f\u041e\3\2\2\2\u041f")
+        buf.write("\u0420\3\2\2\2\u0420\u00ab\3\2\2\2\u0421\u0423\5\u00ae")
+        buf.write("X\2\u0422\u0421\3\2\2\2\u0422\u0423\3\2\2\2\u0423\u0425")
+        buf.write("\3\2\2\2\u0424\u0426\5\u00b0Y\2\u0425\u0424\3\2\2\2\u0425")
+        buf.write("\u0426\3\2\2\2\u0426\u0428\3\2\2\2\u0427\u0429\5\u00b2")
+        buf.write("Z\2\u0428\u0427\3\2\2\2\u0428\u0429\3\2\2\2\u0429\u042b")
+        buf.write("\3\2\2\2\u042a\u042c\5\u00b4[\2\u042b\u042a\3\2\2\2\u042b")
+        buf.write("\u042c\3\2\2\2\u042c\u00ad\3\2\2\2\u042d\u042e\7;\2\2")
+        buf.write("\u042e\u00af\3\2\2\2\u042f\u0430\7\16\2\2\u0430\u0431")
+        buf.write("\7;\2\2\u0431\u00b1\3\2\2\2\u0432\u0433\7\17\2\2\u0433")
+        buf.write("\u0434\7;\2\2\u0434\u00b3\3\2\2\2\u0435\u0436\7\20\2\2")
+        buf.write("\u0436\u0437\7;\2\2\u0437\u00b5\3\2\2\2\u0438\u0439\7")
+        buf.write("\21\2\2\u0439\u043a\7\22\2\2\u043a\u043b\5\u00b8]\2\u043b")
+        buf.write("\u00b7\3\2\2\2\u043c\u0441\5\u00ba^\2\u043d\u043e\7I\2")
+        buf.write("\2\u043e\u0440\5\u00ba^\2\u043f\u043d\3\2\2\2\u0440\u0443")
+        buf.write("\3\2\2\2\u0441\u043f\3\2\2\2\u0441\u0442\3\2\2\2\u0442")
+        buf.write("\u00b9\3\2\2\2\u0443\u0441\3\2\2\2\u0444\u0446\5^\60\2")
+        buf.write("\u0445\u0447\t\7\2\2\u0446\u0445\3\2\2\2\u0446\u0447\3")
+        buf.write("\2\2\2\u0447\u00bb\3\2\2\2\u0448\u0449\7\25\2\2\u0449")
         buf.write("\u044a\7\22\2\2\u044a\u044b\5\u00be`\2\u044b\u00bd\3\2")
         buf.write("\2\2\u044c\u0451\5\u00c0a\2\u044d\u044e\7I\2\2\u044e\u0450")
         buf.write("\5\u00c0a\2\u044f\u044d\3\2\2\2\u0450\u0453\3\2\2\2\u0451")
@@ -5975,8 +5975,8 @@ class PythonQLParser ( Parser ):
         def NAME(self):
             return self.getToken(PythonQLParser.NAME, 0)
 
-        def expr(self):
-            return self.getTypedRuleContext(PythonQLParser.ExprContext,0)
+        def test(self):
+            return self.getTypedRuleContext(PythonQLParser.TestContext,0)
 
 
         def window_start_cond(self):
@@ -6010,7 +6010,7 @@ class PythonQLParser ( Parser ):
             self.state = 1026
             self.match(PythonQLParser.IN)
             self.state = 1027
-            self.expr()
+            self.test()
             self.state = 1028
             self.window_start_cond()
             self.state = 1030
@@ -6037,8 +6037,8 @@ class PythonQLParser ( Parser ):
         def NAME(self):
             return self.getToken(PythonQLParser.NAME, 0)
 
-        def expr(self):
-            return self.getTypedRuleContext(PythonQLParser.ExprContext,0)
+        def test(self):
+            return self.getTypedRuleContext(PythonQLParser.TestContext,0)
 
 
         def window_start_cond(self):
@@ -6072,7 +6072,7 @@ class PythonQLParser ( Parser ):
             self.state = 1036
             self.match(PythonQLParser.IN)
             self.state = 1037
-            self.expr()
+            self.test()
             self.state = 1038
             self.window_start_cond()
             self.state = 1039
@@ -6095,8 +6095,8 @@ class PythonQLParser ( Parser ):
             return self.getTypedRuleContext(PythonQLParser.Window_varsContext,0)
 
 
-        def expr(self):
-            return self.getTypedRuleContext(PythonQLParser.ExprContext,0)
+        def test(self):
+            return self.getTypedRuleContext(PythonQLParser.TestContext,0)
 
 
         def getRuleIndex(self):
@@ -6118,7 +6118,7 @@ class PythonQLParser ( Parser ):
             self.state = 1043
             self.match(PythonQLParser.T__8)
             self.state = 1044
-            self.expr()
+            self.test()
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -6141,8 +6141,8 @@ class PythonQLParser ( Parser ):
             return self.getTypedRuleContext(PythonQLParser.Window_varsContext,0)
 
 
-        def expr(self):
-            return self.getTypedRuleContext(PythonQLParser.ExprContext,0)
+        def test(self):
+            return self.getTypedRuleContext(PythonQLParser.TestContext,0)
 
 
         def getRuleIndex(self):
@@ -6166,7 +6166,7 @@ class PythonQLParser ( Parser ):
             self.state = 1049
             self.match(PythonQLParser.T__8)
             self.state = 1050
-            self.expr()
+            self.test()
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

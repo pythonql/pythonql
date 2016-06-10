@@ -533,15 +533,15 @@ let_clause_entry
 
 window_clause: tumbling_window | sliding_window;
 
-tumbling_window: 'for' 'tumbling' 'window' NAME 'in' expr
+tumbling_window: 'for' 'tumbling' 'window' NAME 'in' test
                  window_start_cond (window_end_cond)?;
 
-sliding_window: 'for' 'sliding' 'window' NAME 'in' expr
+sliding_window: 'for' 'sliding' 'window' NAME 'in' test
 		window_start_cond window_end_cond;
 
-window_start_cond: 'start' window_vars 'when' expr ;
+window_start_cond: 'start' window_vars 'when' test;
 
-window_end_cond: opt_only 'end' window_vars 'when' expr;
+window_end_cond: opt_only 'end' window_vars 'when' test;
 
 opt_only: ('only')?;
 
