@@ -146,7 +146,7 @@ def processSelectClause(c, table, prior_lcs):
   new_table = PQTable(select_schema)
 
   # Compile all the expressions
-  comp_exprs = [ str_dec(s[0]).lstrip() for s in c["select_list"] ]
+  comp_exprs = [ s[0].lstrip() for s in c["select_list"] ]
   comp_exprs = [ compile(e,'<string>','eval') for e in comp_exprs ]
   for t in table.data:
     # Compute the value of tuple elements
@@ -172,7 +172,7 @@ def processSelectClause(c, table, prior_lcs):
 def processForClause(c, table, prior_lcs):
   new_schema = dict(table.schema)
   new_schema[c["var"]] = len(table.schema)
-  comp_expr = compile(str_dec(c["expr"]).lstrip(), "<string>", "eval")
+  comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
 
   new_table = PQTable( new_schema )
   for t in table.data:
@@ -192,7 +192,7 @@ def processForClause(c, table, prior_lcs):
 def processLetClause(c, table, prior_lcs):
   new_schema = dict(table.schema)
   new_schema[ c["var"]] = len(table.schema)
-  comp_expr = compile(str_dec(c["expr"]).lstrip(), "<string>", "eval")
+  comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
   new_table = PQTable( new_schema )
   for t in table.data:
     lcs = prior_lcs
@@ -260,7 +260,7 @@ def processGroupByClause(c, table, prior_lcs):
 # Process where clause
 def processWhereClause(c, table, prior_lcs):
   new_table = PQTable(table.schema)
-  comp_expr = compile(str_dec(c["expr"]).lstrip(),"<string>","eval")
+  comp_expr = compile(c["expr"].lstrip(),"<string>","eval")
   for t in table.data:
     lcs = prior_lcs
     lcs.update(t.getDict())
@@ -276,7 +276,7 @@ def processOrderByClause(c, table, prior_lcs):
   # For each sort we first need to compute a sort value (could
   # be some expression)
 
-  sort_exprs = [ compile(str_dec(os[0]).lstrip(),"<string>","eval") for os in c["orderby_list"]]
+  sort_exprs = [ compile(os[0].lstrip(),"<string>","eval") for os in c["orderby_list"]]
   sort_rev = [ o[1]=='desc' for o in c["orderby_list"]]
 
   def computeSortSpec(tup,sort_spec):
