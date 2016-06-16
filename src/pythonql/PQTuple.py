@@ -33,3 +33,8 @@ class PQTuple:
     itms = list(self.schema.items())
     itms.sort(key=lambda x:x[1])
     return "{" + ",".join([ '"%s":%s' % (i[0].lstrip().rstrip(), repr(self.tuple[i[1]]))  for i in itms]) + "}"
+
+def pq_wrap(list,schema):
+  for item in list:
+    yield PQTuple(item,schema)
+
