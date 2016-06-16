@@ -10,8 +10,8 @@ We propose the following extensions to Python( that are implemeneted in this dem
  - Path expressions. When working with nested data that has varied structure, path expressions are extremely useful. We have modeled our path expression on XPath, however we use a much simplified verison:
 
   - Child step:  ```for x in data ./``` 
-  - Descended step: ```for x in data .//```
-  - Filter step: ```for x in data { key == 'green' }```
+  - Descendants step: ```for x in data .//```
+  - Filter step: ```for x in data { key == 'green' }``` (if the filter is applied to a map, ``key`` and ``value`` are defined, otherwise ``item`` is defined)
 
 So we can write path expression in the query language (and elsewhere in Python expressions) like this:
 ```
