@@ -12,9 +12,9 @@ its confusing. Instead of `test` in EBNF we use `expr`, and instead of
 
 ```jflex
   expr := old_expr ( path_step )*;
-  path_step := './' | './/' | '{' expr '}';
+  path_step := './' | './/' | 'filter' '{' expr '}';
 ```
-`'./'` is a child path step. `.//` is a descendent path step. `'{' expr '}'` is a filter.
+`'./'` is a child path step. `.//` is a descendent path step. `filter '{' expr '}'` is a filter.
 
 Predicate expression is an arbitrary Python expression, but has the following predefined variables
 avaiable for use: `item` if the predicate is applied to list and `key` and `value` if the predicate
