@@ -175,7 +175,7 @@ def get_path_expression_terminals(tree,parser):
         elif isDescStep(c,parser):
             result = mk_tok([ "PQDescPath", "(", result, ")"])
         elif isPredStep(c,parser):
-            condition = mk_tok([ getTextList(get_all_terminals(c,parser)[1:-1]).replace('"', '\\"') ])
+            condition = mk_tok([ getTextList(get_all_terminals(c,parser)[2:-1]).replace('"', '\\"') ])
             result = mk_tok([ "PQPred", "(", result, ",", '"', condition, '"',")"])
     
     return result
