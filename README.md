@@ -11,11 +11,11 @@ We propose the following extensions to Python( that are implemeneted in this dem
 
   - Child step:  ```for x in data ./``` 
   - Descendants step: ```for x in data .//```
-  - Filter step: ```for x in data { key == 'green' }``` (if the filter is applied to a map, ``key`` and ``value`` are defined, otherwise ``item`` is defined)
+  - Filter step: ```for x in data filter { key == 'green' }``` (if the filter is applied to a map, ``key`` and ``value`` are defined, otherwise ``item`` is defined)
 
 So we can write path expression in the query language (and elsewhere in Python expressions) like this:
 ```
-  for x in data ./ {key == 'green'} .// { key == 'yellow' }
+  for x in data ./ filter {key == 'green'} .// filter { key == 'yellow' }
 ```
 
  - Try-except expressions. Python has try-except statement, but in many cases when working with dirty or semi-structured data, we need to be able to use an expression inside an iterator or the query. So we introduced a try-except expressions:
