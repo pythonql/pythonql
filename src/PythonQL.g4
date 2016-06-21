@@ -358,7 +358,7 @@ path_step
 
 child_path_step: './';
 desc_path_step: './/';
-pred_path_step: '{' test '}';
+pred_path_step: 'filter' '{' test '}';
 
 try_catch_expr
   : old_test

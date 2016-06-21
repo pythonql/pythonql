@@ -38,3 +38,13 @@ def pq_wrap(list,schema):
   for item in list:
     yield PQTuple(item,schema)
 
+def pq_flatten(nested_list):
+  if isinstance(nested_list,list):
+    for i in nested_list:
+      if isinstance(i,list):
+        for x in pq_flatten(i):
+          yield x
+      else:
+        yield i
+  else:
+    yield nested_list
