@@ -362,7 +362,7 @@ pred_path_step: 'filter' '{' test '}';
 
 try_catch_expr
   : old_test
-  | 'try' '{' old_test '}' 'except' opt_exception '{' old_test '}'
+  | 'try'  old_test  'except' opt_exception  old_test 
   ;
 
 opt_exception: old_test?;
@@ -499,10 +499,19 @@ atom
  | NONE
  | TRUE
  | FALSE
- | query_expression 
+ | gen_query_expression 
+ | list_query_expression 
  ;
 
 // This is our addition to the grammar, the Query Expression
+gen_query_expression
+ : '(' query_expression ')'
+ ;
+
+list_query_expression
+ : '[' query_expression ']'
+ ;
+
 query_expression: 
   select_clause
   (for_clause|let_clause|window_clause)
@@ -550,7 +559,7 @@ window_vars: current_item? positional_var? previous_var? next_var?;
 current_item: NAME;
 positional_var: 'at' NAME;
 previous_var: 'previous' NAME;
-next_var: 'next' NAME;
+next_var: 'following' NAME;
 
 order_by_clause: 'order' 'by' orderlist
 ;

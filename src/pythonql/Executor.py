@@ -1,6 +1,7 @@
 from pythonql.PQTuple import PQTuple
 from pythonql.PQTable import PQTable
 import json
+import types
 
 def str_dec(string):
     res = ""
@@ -107,12 +108,15 @@ def emptyTuple(schema):
   return PQTuple([None] * len(schema), schema)
 
 # Execute the query
-def PyQuery( clauses, prior_locs ):
-  table = PQTable([])
-  table.data.append( emptyTuple([]) )
+def PyQuery( clauses, prior_locs, returnGen ):
+  data = []
+  data.append( emptyTuple([]) )
   for c in clauses:
-    table = processClause(c, table, prior_locs)
-  return table.data
+    data = processClause(c, data, prior_locs)
+  if returnGen:
+    return data
+  else:
+    return list(data)
 
 # Process clauses
 def processClause(c, table, prior_locs):
@@ -141,14 +145,11 @@ def processSelectClause(c, table, prior_lcs):
   # Compute the output schema
   select_schema = { (sel[1] if sel[1] else sel[0]) : i 
 			for (i,sel) in enumerate(c["select_list"]) }
-  # Create a new table that will be filled out by this
-  # method
-  new_table = PQTable(select_schema)
 
   # Compile all the expressions
   comp_exprs = [ s[0].lstrip() for s in c["select_list"] ]
   comp_exprs = [ compile(e,'<string>','eval') for e in comp_exprs ]
-  for t in table.data:
+  for t in table:
     # Compute the value of tuple elements
     new_tuple = []
     for (i,sel) in enumerate(c["select_list"]):
@@ -159,23 +160,24 @@ def processSelectClause(c, table, prior_lcs):
     # If we have only one element in the select list
     # then the output table will be a sequence of values
     if len(c["select_list"]) == 1:
-      new_table.data.append(new_tuple[0])
+      yield new_tuple[0]
 
     # Otherwise we'll create tuples in the output
     else:
-      new_table.data.append(PQTuple( new_tuple, select_schema))
-
-  return new_table
+      yield PQTuple( new_tuple, select_schema)
 
 # Process the for clause. This clause creates a cartesian
 # product of the input table with new sequence
 def processForClause(c, table, prior_lcs):
-  new_schema = dict(table.schema)
-  new_schema[c["var"]] = len(table.schema)
+  new_schema = None
   comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
 
   new_table = PQTable( new_schema )
-  for t in table.data:
+  for t in table:
+    if not new_schema:
+      new_schema = dict(t.schema)
+      new_schema[c["var"]] = len(t.schema)
+
     lcs = prior_lcs
     lcs.update(t.getDict())
     vals = eval(comp_expr, globals(), lcs)
@@ -183,35 +185,38 @@ def processForClause(c, table, prior_lcs):
       new_t_data = list(t.tuple)
       new_t_data.append(v)
       new_t = PQTuple(new_t_data, new_schema)
-      new_table.data.append(new_t)
+      yield new_t
 
-  return new_table
 
 # Process the let clause. Here we just add a variable to each
 # input tuple
 def processLetClause(c, table, prior_lcs):
-  new_schema = dict(table.schema)
-  new_schema[ c["var"]] = len(table.schema)
   comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
-  new_table = PQTable( new_schema )
-  for t in table.data:
+  new_schema = None
+  for t in table:
+
+    if not new_schema:
+      new_schema = dict(t.schema)
+      new_schema[c["var"]] = len(t.schema)
+
     lcs = prior_lcs
     lcs.update(t.getDict())
     v = eval(comp_expr, globals(), lcs)
     t.tuple.append(v)
     new_t = PQTuple( t.tuple, new_schema )
-    new_table.data.append(new_t)
-  return new_table
+    yield new_t
 
 # Process the count clause. Similar to let, but simpler
 def processCountClause(c, table, prior_lcs):
-  new_schema = dict(table.schema)
-  new_schema[ c["var"]] = len(table.schema)
-  new_table = PQTable( new_schema )
-  for (i,t) in enumerate(table.data):
+  new_schema = None
+  for (i,t) in enumerate(table):
+
+    if not new_schema:
+      new_schema = dict(t.schema)
+      new_schema[c["var"]] = len(t.schema)
+
     new_t = PQTuple( t.tuple + [i], new_schema )
-    new_table.data.append(new_t)
-  return new_table
+    yield new_t
 
 # Process the group-by
 def processGroupByClause(c, table, prior_lcs):
@@ -222,8 +227,13 @@ def processGroupByClause(c, table, prior_lcs):
   comp_exprs = [compile(e,'<string>','eval') for e in gby_exprs]
   grp_table = {}
 
+  schema = None
   # Group tuples in a hashtable
-  for t in table.data:
+  for t in table:
+  
+    if not schema:
+      schema = t.schema
+
     lcs = prior_lcs
     lcs.update(t.getDict())
     # Compute the key
@@ -232,11 +242,15 @@ def processGroupByClause(c, table, prior_lcs):
       grp_table[k] = []
     grp_table[k].append(t)
 
+  if not grp_table:
+    return
+    yield
+
   # Construct the new table
   # Non-key variables
-  non_key_vars = [v for v in table.schema if not v in gby_aliases ]
+  non_key_vars = [v for v in schema if not v in gby_aliases ]
   new_schema = {v:i for (i,v) in enumerate( gby_aliases + non_key_vars )}
-  new_table = PQTable(new_schema)
+  new_table = []
   for k in grp_table:
     t = PQTuple([None]*len(new_schema), new_schema)
     #Copy over the key
@@ -253,22 +267,18 @@ def processGroupByClause(c, table, prior_lcs):
       for v in non_key_vars:
         t[v].append( part_t[v] )
 
-    new_table.data.append(t)
+    yield t
 
-  return new_table
 
 # Process where clause
 def processWhereClause(c, table, prior_lcs):
-  new_table = PQTable(table.schema)
   comp_expr = compile(c["expr"].lstrip(),"<string>","eval")
-  for t in table.data:
+  for t in table:
     lcs = prior_lcs
     lcs.update(t.getDict())
     val = eval(comp_expr, globals(), lcs)
     if val:
-      new_table.data.append(t)
-
-  return new_table
+      yield t
 
 # Process the orderby clause
 def processOrderByClause(c, table, prior_lcs):
@@ -286,11 +296,16 @@ def processOrderByClause(c, table, prior_lcs):
 
   sort_exprs.reverse()
   sort_rev.reverse()
+
+  if isinstance(table,types.GeneratorType):
+    table = list(table)
+
   for (i,e) in enumerate(sort_exprs):
-    table.data.sort( key = lambda x: computeSortSpec(x,e),
+    table.sort( key = lambda x: computeSortSpec(x,e),
          reverse= sort_rev[i])
 
-  return table
+  for t in table:
+    yield t
   
 # Create the set of variables for a new window
 # This is the full set just for convienience, the
@@ -354,10 +369,8 @@ def check_end_condition(vars,clause,locals,var_mapping):
 
 # Process window clause
 def processWindowClause(c, table, prior_lcs):
-  # Create a new schema with window variables added
-  new_schema = dict(table.schema)
-  for v in c["vars"]:
-    new_schema[c["vars"][v]] = len(new_schema)
+  schema = None
+  new_schema = None
 
   # Create window variable name mapping
   var_mapping = {}
@@ -365,7 +378,14 @@ def processWindowClause(c, table, prior_lcs):
     var_mapping[v] = c["vars"][v]
 		
   new_table = PQTable( new_schema )
-  for t in table.data:
+  for t in table:
+    if not schema:
+      schema = t.schema
+      # Create a new schema with window variables added
+      new_schema = dict(t.schema)
+      for v in c["vars"]:
+        new_schema[c["vars"][v]] = len(new_schema)
+
     lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     # Evaluate the binding sequence
@@ -410,10 +430,8 @@ def processWindowClause(c, table, prior_lcs):
     # create a new tuple by extending the tuple from previous clauses
     # with the window variables, for each closed window
     for w in closed_windows:
-      new_t = PQTuple( t.tuple + [None]*(len(new_schema)-len(table.schema)), new_schema)
+      new_t = PQTuple( t.tuple + [None]*(len(new_schema)-len(schema)), new_schema)
       new_t[ var_mapping["var"] ] = w["window"]
       for v in [v for v in w["vars"].keys() if v in var_mapping]:
         new_t[ var_mapping[v] ] = w["vars"][v]
-      new_table.data.append(new_t)
-
-  return new_table
+      yield new_t

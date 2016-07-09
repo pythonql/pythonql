@@ -21,12 +21,20 @@ So we can write path expression in the query language (and elsewhere in Python e
  - Try-except expressions. Python has try-except statement, but in many cases when working with dirty or semi-structured data, we need to be able to use an expression inside an iterator or the query. So we introduced a try-except expressions:
  
 ```
-  [ try {int(x)} except {0} for x in values ]
+  [ try int(x) except 0 for x in values ]
 ```
 
  - Query expressions:
-We have a syntax that looks similar to SQL, but is more flexible and of course most of the expressions in the query are
-in pure Python. A lot of functionality is cleaner, than in SQL, like the window queries, subqueries in general, etc. Here is a small example PythonQL program (we're building a demo website with a number of scenarios that are especially good for solving with PythonQL):
+We have built our query syntax to resemble Python's comprehensions as much as possible (in the future we're planning to make our syntax a strict extension of the comprehension syntax, but its more convenient to keep them separate right now).
+
+ At the same time our queries look similar to SQL, but are more flexible and of course most of the expressions in the queres are
+in pure Python. A lot of functionality is cleaner than in SQL, like the window queries, subqueries in general, etc.
+
+
+As in Python, our query expressions can return generators, list and sets (we don't have queries that return dicts).
+
+
+Here is a small example PythonQL program (we're building a demo website with a number of scenarios that are especially good for solving with PythonQL):
 
 ```Python
 # This example illustrates the try-catch business in PythonQL.
@@ -45,21 +53,21 @@ ords = [ ord(1,1,"16.54"),
 custs = [ cust(1,"John"), cust(2,"Dave"), cust(3,"Boris") ]
 
 # Basic SQL query, but with some data cleaning
-res = (select name, sum(price) as sum
+res = [select name, sum(price) as sum
         for o in ords
-        let price = try{ float(o.price) } except {0}
+        let price = try float(o.price)  except 0
         for c in custs
         where c.cust_id == o.cust_id
-        group by c.cust_id as id, c.cust_name as name)
+        group by c.cust_id as id, c.cust_name as name]
 
 print (res)
 
 # Funny query, lets count how many integers there are everywhere in the data
-res = ( select x
+res = [ select x
         for x in ords .//
-        let y = try { True if int(x) else False } except { False }
+        let y = try isinstance(int(x),int) else False except False
         where y
-        )
+        ]
 
 print (len(res))
 ```

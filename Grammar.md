@@ -27,7 +27,7 @@ expressions. But they are incredibly useful there, so we introduced a simple for
 expression.
 
 ```jflex
-  try_except_expr := 'try' '{' expr '}' 'except' expr ? '{' expr '}'
+  try_except_expr := 'try'  expr  'except' expr ?  expr 
 ```  
 
 ##Query Expression
@@ -42,15 +42,15 @@ query_expression := select
                 ( for | let ) 
                 ( for | let | where | window | count | groupby | orderby )* ;
 
-select := ( 'select' | 'return' ) select_var (',' select_var) * ;
+select := 'select' select_var (',' select_var) * ;
 
 select_var := expr ("as" NAME)? ;
 
-for := ( 'for' | 'from' ) NAME 'in' expr (',' NAME 'in' expr ) * ;
+for := 'for' NAME 'in' expr (',' NAME 'in' expr ) * ;
 
-let := ( 'let' | 'with' ) NAME '=' expr (',' NAME '=' expr ) *;
+let := 'let' NAME '=' expr (',' NAME '=' expr ) *;
 
-where := 'where' | 'having' expr ;
+where := 'where' expr ;
 
 count := 'count' NAME;
 
@@ -68,7 +68,6 @@ window_start_cond := 'start' window_vars 'when' expr ;
 
 window_end_cond := 'only'? 'end' window_vars 'when' expr ;
 
-window_vars := NAME? ("at" NAME)? ("previous" NAME)? ("next" NAME)?
+window_vars := NAME? ("at" NAME)? ("previous" NAME)? ("following" NAME)?
 
 ```
-**TODO:** We need to decide if we want to keep the select in the current shape. Or just replace the whole thing with a single expression like in JSONiq or XQuery. The semantics of the select list with mutlitple expressions and aliases right now is to create a PQTuple object, which combines dict(JSON), tuple (native Python tuple) and namedtuple (also avaiable in Python) interfaces. So its pretty cool for relational data, but also can be used for JSONiq and maybe XML (we can make a default mapping from PQTuple to XML.

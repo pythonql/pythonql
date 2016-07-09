@@ -1,0 +1,20 @@
+# This example illustrates the window query in PythonQL
+
+from collections import namedtuple
+trade = namedtuple('Trade', ['day','ammount', 'stock_id'])
+
+trades = [ trade(1, 15.34, 'APPL'),
+           trade(2, 13.45, 'APPL'),
+           trade(3, 8.34,  'APPL'),
+           trade(4, 9.87,  'APPL'),
+           trade(5, 10.99, 'APPL'),
+           trade(6, 76.16, 'APPL') ]
+
+# Maximum 3-day sum
+
+res = [select win
+        for sliding window win in ( select t.ammount for t in trades )
+        start at s when True
+        only end at e when e-s == 2]
+
+print (res)

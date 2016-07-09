@@ -92,7 +92,8 @@ def isTryExceptExpression(tree,parser):
 def isQuery(tree,parser):
     if isinstance(tree,TerminalNodeImpl):
         return False
-    return tree.getRuleIndex()==parser.RULE_query_expression
+    return (tree.getRuleIndex()==parser.RULE_gen_query_expression or
+            tree.getRuleIndex()==parser.RULE_list_query_expression)
 
 def isChildStep(tree,parser):
     return (tree.getRuleIndex()==parser.RULE_path_step 
@@ -183,9 +184,9 @@ def get_path_expression_terminals(tree,parser):
 # Convert try-catch expression to Python
 def get_try_except_expression_terminals(tree,parser):
     children = tree.children
-    try_expr = children[2]
-    exc = children[5] if children[5].children else None
-    except_expr = children[7]
+    try_expr = children[1]
+    exc = children[3] if children[3].children else None
+    except_expr = children[4]
     exc_tokens = mk_tok(["None"]) if not exc else mk_tok([ getTermsEsc(exc,parser) ])
  
     result = mk_tok(["PQTry", "(", getTermsEsc(try_expr,parser), ",",
@@ -312,7 +313,8 @@ def process_window_clause(tree,parser):
 # PyQuery that takes all the clauses and evaluates them.
 
 def get_query_terminals(tree,parser):
-    children = tree.children
+    isGen = tree.getRuleIndex() == parser.RULE_gen_query_expression
+    children = tree.children[1].children
     clauses = []
 
     # We process select clause separately, because we add it
@@ -341,7 +343,7 @@ def get_query_terminals(tree,parser):
     clauses.append( select_clause )
 
     clauses_repr = reduce( lambda x,y: x + mk_tok([","]) + y, clauses)
-    return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ")"])
+    return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ",", repr(isGen), ")"])
 
 # Process an arbitrary PythonQL program
 def get_all_terminals(tree,parser):
