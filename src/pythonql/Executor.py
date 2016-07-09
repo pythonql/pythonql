@@ -108,15 +108,17 @@ def emptyTuple(schema):
   return PQTuple([None] * len(schema), schema)
 
 # Execute the query
-def PyQuery( clauses, prior_locs, returnGen ):
+def PyQuery( clauses, prior_locs, returnType ):
   data = []
   data.append( emptyTuple([]) )
   for c in clauses:
     data = processClause(c, data, prior_locs)
-  if returnGen:
+  if returnType == "gen":
     return data
-  else:
+  elif returnType == "list":
     return list(data)
+  else:
+    return set(data)
 
 # Process clauses
 def processClause(c, table, prior_locs):

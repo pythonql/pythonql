@@ -501,6 +501,7 @@ atom
  | FALSE
  | gen_query_expression 
  | list_query_expression 
+ | set_query_expression
  ;
 
 // This is our addition to the grammar, the Query Expression
@@ -510,6 +511,10 @@ gen_query_expression
 
 list_query_expression
  : '[' query_expression ']'
+ ;
+
+set_query_expression
+ : '{' query_expression '}'
  ;
 
 query_expression: 

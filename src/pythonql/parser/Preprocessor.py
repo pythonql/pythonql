@@ -93,7 +93,8 @@ def isQuery(tree,parser):
     if isinstance(tree,TerminalNodeImpl):
         return False
     return (tree.getRuleIndex()==parser.RULE_gen_query_expression or
-            tree.getRuleIndex()==parser.RULE_list_query_expression)
+            tree.getRuleIndex()==parser.RULE_list_query_expression or
+            tree.getRuleIndex()==parser.RULE_set_query_expression )
 
 def isChildStep(tree,parser):
     return (tree.getRuleIndex()==parser.RULE_path_step 
@@ -313,7 +314,14 @@ def process_window_clause(tree,parser):
 # PyQuery that takes all the clauses and evaluates them.
 
 def get_query_terminals(tree,parser):
-    isGen = tree.getRuleIndex() == parser.RULE_gen_query_expression
+    query_type = None
+    if tree.getRuleIndex() == parser.RULE_gen_query_expression:
+      query_type = "gen"
+    elif tree.getRuleIndex() == parser.RULE_list_query_expression:
+      query_type = "list"
+    elif tree.getRuleIndex() == parser.RULE_set_query_expression:
+      query_type = "set"
+
     children = tree.children[1].children
     clauses = []
 
@@ -343,7 +351,7 @@ def get_query_terminals(tree,parser):
     clauses.append( select_clause )
 
     clauses_repr = reduce( lambda x,y: x + mk_tok([","]) + y, clauses)
-    return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ",", repr(isGen), ")"])
+    return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ",", '"'+query_type+'"', ")"])
 
 # Process an arbitrary PythonQL program
 def get_all_terminals(tree,parser):
