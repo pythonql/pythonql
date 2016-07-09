@@ -524,21 +524,21 @@ query_expression:
       group_by_clause|where_clause|order_by_clause|count_clause)*
   ;
 
-select_clause: ('select'|'return') selectvar (',' selectvar)*
+select_clause: 'select' selectvar (',' selectvar)*
 ;
 
 selectvar
  : test ('as' NAME)?
  ;
 
-for_clause: ('for'|'from') for_clause_entry (',' for_clause_entry)*
+for_clause: 'for' for_clause_entry (',' for_clause_entry)*
 ;
 
 for_clause_entry
   : NAME 'in' test 
   ;
 
-let_clause: ('let'|'with') let_clause_entry (',' let_clause_entry)*
+let_clause: 'let' let_clause_entry (',' let_clause_entry)*
 ;
 
 let_clause_entry
@@ -586,7 +586,7 @@ group_by_vars
 
 group_by_var: old_test ('as' NAME)?;
 
-where_clause: ('where'|'having') test
+where_clause: 'where' test
 ;
 
 count_clause: 'count' NAME;
