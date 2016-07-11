@@ -21,7 +21,7 @@ So we can write path expression in the query language (and elsewhere in Python e
  - Try-except expressions. Python has try-except statement, but in many cases when working with dirty or semi-structured data, we need to be able to use an expression inside an iterator or the query. So we introduced a try-except expressions:
  
 ```
-  [ try int(x) except 0 for x in values ]
+   try int(x) except 0 for x in values 
 ```
 
  - Query expressions:
