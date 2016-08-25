@@ -33,3 +33,26 @@ def empty(seq):
     except:
       return True
 
+def print_table(tuples,max_len=0):
+
+  def fit(str,max_len):
+    if len(str)<=max_len:
+      return str + " " * int((max_len - len(str))*1.8)
+    else:
+      return str[0:max_len]
+
+  if not tuples:
+    return
+
+  schema = [ x[0] for x in sorted(tuples[0].schema.items(), key=lambda z:z[1] ) ]
+
+  lengths = [0]* len(tuples[0].tuple)
+  for x in range(len(tuples[0].tuple)):
+    lengths[x] = max([ len(repr(y[x])) for y in tuples ] + [len(schema[x])])
+    if max_len:
+      lengths[x] = lengths[x] if lengths[x]<max_len else max_len
+
+  print( " | ".join( [ fit(x, lengths[i]) for (i,x) in enumerate(schema) ] ))
+  print( "-+-".join( [ fit('-'*len(x), lengths[i]) for (i,x) in enumerate(schema) ] ))
+  for t in tuples:
+    print( " | ".join( [fit(repr(x), lengths[i]) for (i,x) in enumerate(t.tuple) ] ))
