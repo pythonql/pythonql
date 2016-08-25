@@ -381,12 +381,14 @@ def all_ws(t):
 
 # Generate a program from a list of text tokens
 def makeProgramFromTextTokens(tokens):
+    for t in tokens:
+      print(repr(t))
     result = ""
     indent = 0
     buffer = ""
     for t in tokens:
         if buffer!="":
-            if t==' ' or t=='\n' or t=='\r\n':
+            if t==' ' or t=='  ' or t=='\n' or t=='\n ' or t=='\r\n':
                 result += buffer + '\n'
                 buffer = ""
             else:
@@ -394,7 +396,7 @@ def makeProgramFromTextTokens(tokens):
         else:
             if t==' ':
                 indent = indent -1
-            elif t=='\n' or t=='\r\n':
+            elif '\n' in t or '\r' in t:
                 indent -= 1
                 indent = indent if indent>=0 else 0
             elif all_ws(t):
