@@ -381,8 +381,6 @@ def all_ws(t):
 
 # Generate a program from a list of text tokens
 def makeProgramFromTextTokens(tokens):
-    for t in tokens:
-      print(repr(t))
     result = ""
     indent = 0
     buffer = ""
