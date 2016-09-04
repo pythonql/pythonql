@@ -79,7 +79,7 @@ execute it, or execute a pythonql string. We have a runner that you can use to e
 
 `python3 pythonql/RunPYQL.py <pythonql program>`
 
-## How it will work later
+## How it will work soon (and properly):
 
 In the near future we will reimplement PythonQL to use file encoding, hence it will compile automatically
 if you mark your Python file as a PythonQL file.
