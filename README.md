@@ -72,6 +72,14 @@ res = [ select x
 print (len(res))
 ```
 
-## Usage:
+## Running pythonql:
+
+Currently PythonQL is available as a pre-processor, so you need to write a pythonql script and
+execute it, or execute a pythonql string. We have a runner that you can use to execute a file:
 
 `python3 pythonql/RunPYQL.py <pythonql program>`
+
+## How it will work later
+
+In the near future we will reimplement PythonQL to use file encoding, hence it will compile automatically
+if you mark your Python file as a PythonQL file.
