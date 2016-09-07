@@ -72,6 +72,10 @@ res = [ select x
 print (len(res))
 ```
 
+## Installing pythonql:
+
+Currently you need to clone this repository. In the future we'll make a pip installer.
+
 ## Running pythonql:
 
 Currently PythonQL is available as a pre-processor, so you need to write a pythonql script and
