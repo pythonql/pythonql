@@ -353,16 +353,14 @@ test
 path_step
   : child_path_step
   | desc_path_step
-  | pred_path_step
   ;
 
-child_path_step: './';
-desc_path_step: './/';
-pred_path_step: 'filter' '{' test '}';
+child_path_step: './' try_catch_expr;
+desc_path_step: './/' try_catch_expr;
 
 try_catch_expr
   : old_test
-  | 'try'  old_test  'except' opt_exception  old_test 
+  | 'try'  old_test  'except' old_test 
   ;
 
 opt_exception: old_test?;
@@ -488,11 +486,11 @@ power
 ///        '[' [testlist_comp] ']' |
 ///        '{' [dictorsetmaker] '}' |
 ///        NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False')
-atom
- : '(' ( yield_expr | testlist_comp )? ')' 
- | '[' testlist_comp? ']'  
- | '{' dictorsetmaker? '}' 
- | NAME 
+atom :
+// '(' ( yield_expr | testlist_comp )? ')' 
+// | '[' testlist_comp? ']'  
+// | '{' dictorsetmaker? '}' 
+  NAME 
  | number 
  | string+ 
  | '...' 
@@ -506,15 +504,15 @@ atom
 
 // This is our addition to the grammar, the Query Expression
 gen_query_expression
- : '(' query_expression ')'
+ : '(' ( yield_expr | testseq_query )? ')'
  ;
 
 list_query_expression
- : '[' query_expression ']'
+ : '[' testlist_query ? ']'
  ;
 
 set_query_expression
- : '{' query_expression '}'
+ : '{' dictorsetmaker? '}'
  ;
 
 query_expression: 
@@ -524,18 +522,24 @@ query_expression:
       group_by_clause|where_clause|order_by_clause|count_clause)*
   ;
 
-select_clause: 'select' selectvar (',' selectvar)*
+query_map_expression: 
+  map_select_clause
+  (for_clause|let_clause|window_clause)
+  (for_clause|let_clause|window_clause|
+      group_by_clause|where_clause|order_by_clause|count_clause)*
+  ;
+
+select_clause: ('select')? test
 ;
 
-selectvar
- : test ('as' NAME)?
- ;
+map_select_clause: ('select')? test ':' test
+;
 
 for_clause: 'for' for_clause_entry (',' for_clause_entry)*
 ;
 
 for_clause_entry
-  : NAME 'in' test 
+  : exprlist 'in' test 
   ;
 
 let_clause: 'let' let_clause_entry (',' let_clause_entry)*
@@ -586,17 +590,22 @@ group_by_vars
 
 group_by_var: old_test ('as' NAME)?;
 
-where_clause: 'where' test
+where_clause: ('where'|'if') test
 ;
 
 count_clause: 'count' NAME;
 
-/// testlist_comp: test ( comp_for | (',' test)* [','] )
-testlist_comp
- : test ( comp_for 
-        | ( ',' test )* ','? 
-        )
+testseq_query
+ : test_as (',' test_as )* ','?
+ | query_expression;
+
+test_as
+ : test ('as' NAME)?
  ;
+
+testlist_query
+ : test (',' test)* ','?
+ | query_expression;
 
 /// trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
 trailer
@@ -634,12 +643,10 @@ testlist
 /// dictorsetmaker: ( (test ':' test (comp_for | (',' test ':' test)* [','])) |
 ///                   (test (comp_for | (',' test)* [','])) )
 dictorsetmaker
- : test ':' test ( comp_for 
-                 | ( ',' test ':' test )* ','? 
-                 ) 
- | test ( comp_for 
-        | ( ',' test )* ','? 
-        )
+ : test ':' test ( ',' test ':' test )* ','? 
+ | query_map_expression 
+ | test ( ',' test )* ','? 
+ | query_expression
  ;
 
 /// classdef: 'class' NAME ['(' [arglist] ')'] ':' suite

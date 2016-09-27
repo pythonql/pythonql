@@ -1,7 +1,19 @@
 from pythonql.PQTuple import PQTuple
 from pythonql.PQTable import PQTable
+from pythonql.helpers import flatten
 import json
 import types
+
+def make_pql_tuple(vals,lcs):
+  t = []
+  als = []
+  for v in vals:
+    t.append(eval(v[0],lcs,globals()))
+    alias = v[1] if v[1] else v[0]
+    als.append(alias)
+
+  schema = {n:i for (i,n) in enumerate(als)}
+  return PQTuple(t,schema)
 
 def str_dec(string):
     res = ""
@@ -29,79 +41,72 @@ def isMap(x):
   return hasattr(x,'keys')
 
 # Implement a child step on some collection or map
-def PQChildPath (coll):
+def PQChildPath (coll,f,lcs):
+  f = eval(str_dec(f), globals(), lcs) if f!='_' else None
   if isList(coll):
-    for i in coll:
-      if isList(i):
-        for j in i:
-          yield j
-      elif isMap(i):
+    for i in flatten(coll):
+      if isMap(i):
         for j in i.keys():
-          yield i[j]
+          if f is None:
+            yield i[j]
+          elif f and j==f:
+            yield i[j]
+
   if isMap(coll):
     for i in coll.keys():
-      yield coll[i]
+      if f is None:
+        yield coll[i]
+      elif f and j==f:
+        yield coll[i]
+
+class map_tuple:
+  def __init__(self,key,value):
+    self.key = key
+    self.value = value
+
+  def __repr__(self):
+    return ("<" + repr(self.key) + ":" + repr(self.value) + ">")
 
 # Implement a descendents path on some collection or map
-def PQDescPath(coll):
+def PQDescPath(coll,f,lcs):
+  f = eval(f,globals(),lcs) if f!='_' else None
   stack = []
   if isList(coll):
-    stack = [i for i in coll]
+    stack = [i for i in flatten(coll)]
   elif isMap(coll):
-    stack = list(coll.values())
+    stack = [map_tuple(k,v) for (k,v) in coll.items()]
+
   while stack:
     i = stack.pop()
-    yield i
+
+    if isinstance(i,map_tuple):
+      if f is None:
+        yield i.value
+      elif f and i.key==f:
+        yield i.value
+
+      i = i.value
+
     if isList(i):
-      [stack.append(j) for j in i[1:]]
-      if isList(i[0]):
-        stack.extend([ci for ci in i[0]])
-      elif isMap(i[0]):
-        stack.extend(i[0].values())
-      yield i[0]
+      it = iter(i)
+      frst = next(it)
+      [stack.append(j) for j in it]
+      if isList(frst):
+        stack.extend([ci for ci in frst])
+      elif isMap(frst):
+        stack.extend([map_tuple(k,v) for (k,v) in frst.items()])
+
     elif isMap(i):
       keys = list(i.keys())
-      [stack.append(i[j]) for j in keys[1:]]
-      yield i[keys[0]]
+      [stack.append(map_tuple(j,i[j])) for j in keys]
 
-#Implements a predicate step on a collection
-def PQPred(coll, pred):
-  pred = str_dec(pred)
-  if isList(coll):
-    return PQPred_list(coll,pred)
-  elif isMap(coll):
-    return PQPred_map(coll,pred)
-
-def PQPred_list(coll,pred):
-  lcs = locals()
-  for i in coll:
-    lcs.update({'item':i})
-    if eval(pred,globals(),lcs):
-      yield i
-
-def PQPred_map(coll,pred):
-  lcs = locals()
-  result = {}
-  for (k,v) in coll.items():
-    lcs.update({'key':k, 'value':v})
-    if eval(pred,globals(),lcs):
-      result[k] = v
-  return result
-
-def PQTry( try_expr, except_expr, exc, lcs):
+def PQTry( try_expr, except_expr, lcs):
   try_expr = str_dec(try_expr)
   except_expr = str_dec(except_expr)
-  if exc:
-    exc = str_dec(exc)
-    try:
-      return eval(try_expr,lcs,globals())
-    except eval(exc):
-      return eval(except_expr,lcs,globals())
-  else:
-    try:
-      return eval(try_expr,lcs,globals())
-    except:
-      return eval(except_expr,lcs,globals())
+  try:
+    return eval(try_expr,lcs,globals())
+  except:
+    return eval(except_expr,lcs,globals())
 
 # create a table with an empty tuple
 def emptyTuple(schema):
@@ -117,8 +122,10 @@ def PyQuery( clauses, prior_locs, returnType ):
     return data
   elif returnType == "list":
     return list(data)
-  else:
+  elif returnType == "set":
     return set(data)
+  else:
+    return dict(data)
 
 # Process clauses
 def processClause(c, table, prior_locs):
@@ -144,29 +151,24 @@ def processClause(c, table, prior_locs):
 # Process Select clause
 # We still keep that feature of generating tuples for now
 def processSelectClause(c, table, prior_lcs):
-  # Compute the output schema
-  select_schema = { (sel[1] if sel[1] else sel[0]) : i 
-			for (i,sel) in enumerate(c["select_list"]) }
-
-  # Compile all the expressions
-  comp_exprs = [ s[0].lstrip() for s in c["select_list"] ]
-  comp_exprs = [ compile(e,'<string>','eval') for e in comp_exprs ]
-  for t in table:
-    # Compute the value of tuple elements
-    new_tuple = []
-    for (i,sel) in enumerate(c["select_list"]):
+  # If this is a list/set comprehension:
+  if "expr" in c:
+    # Compile the expression:
+    e = compile(c["expr"].lstrip(), '<string>','eval')
+    for t in table:
       lcs = prior_lcs
       lcs.update(t.getDict())
-      new_tuple.append( eval(comp_exprs[i], globals(), lcs))
+      yield eval(e,globals(),lcs)
 
-    # If we have only one element in the select list
-    # then the output table will be a sequence of values
-    if len(c["select_list"]) == 1:
-      yield new_tuple[0]
-
-    # Otherwise we'll create tuples in the output
-    else:
-      yield PQTuple( new_tuple, select_schema)
+  else:
+    k_expr = compile(c["key"].lstrip(),'<string>','eval')
+    v_expt = compile(c["value"].lstrip(),'<string>','eval')
+    for t in table:
+      lcs = prior_lcs
+      lcs.update(t.getDict())
+      k = eval(k_expr,globals(),lcs)
+      v = eval(v_expr,globals(),lcs)
+      yield (k,v)
 
 # Process the for clause. This clause creates a cartesian
 # product of the input table with new sequence

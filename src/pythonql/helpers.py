@@ -53,6 +53,7 @@ def print_table(tuples,max_len=0):
       lengths[x] = lengths[x] if lengths[x]<max_len else max_len
 
   print( " | ".join( [ fit(x, lengths[i]) for (i,x) in enumerate(schema) ] ))
-  print( "-+-".join( [ fit('-'*len(x), lengths[i]) for (i,x) in enumerate(schema) ] ))
+  print( "-".join( [ fit('-'*len(x), lengths[i]) for (i,x) in enumerate(schema) ] ))
   for t in tuples:
     print( " | ".join( [fit(repr(x), lengths[i]) for (i,x) in enumerate(t.tuple) ] ))
+  print()

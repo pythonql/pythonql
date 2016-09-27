@@ -31,6 +31,8 @@ class MyToken(TerminalNodeImpl):
         self.text = text
     def getText(self):
         return self.text
+    def __repr__(self):
+        return self.text
 
 # Parse the PythonQL file and return a parse tree
 def parsePythonQL( s ):
@@ -89,12 +91,54 @@ def isTryExceptExpression(tree,parser):
     return (tree.getRuleIndex()==parser.RULE_try_catch_expr
                 and len(tree.children)>1 )
 
+def isTupleConstructor(tree,parser):
+    if isinstance(tree,TerminalNodeImpl):
+        return False
+
+    if tree.getRuleIndex()==parser.RULE_testseq_query:
+      if tree.children[0].getRuleIndex()==parser.RULE_test_as:
+        if len(tree.children)>1:
+          return True
+
+    return False
+
+def moreThanPythonComprehension(tree,parser):
+  select_cl = tree.children[0]
+  if len(select_cl.children)==2 or len(select_cl.children)==4:
+    return True
+  for cl in tree.children[1:]:
+    if not cl.getRuleIndex() in [parser.RULE_for_clause, parser.RULE_where_clause]:
+      return True
+    if cl.getRuleIndex() == parser.RULE_where_clause:
+      if cl.children[0].getText() == 'where':
+        return True
+
+  return False
+
 def isQuery(tree,parser):
     if isinstance(tree,TerminalNodeImpl):
         return False
-    return (tree.getRuleIndex()==parser.RULE_gen_query_expression or
-            tree.getRuleIndex()==parser.RULE_list_query_expression or
-            tree.getRuleIndex()==parser.RULE_set_query_expression )
+
+    if tree.getRuleIndex() in [parser.RULE_gen_query_expression,parser.RULE_list_query_expression]: 
+        if len(tree.children)==2:
+          return False
+        if tree.children[1].getRuleIndex() in [parser.RULE_testlist_query,parser.RULE_testseq_query]:
+          query = tree.children[1].children[0]
+          if query.getRuleIndex() == parser.RULE_query_expression:
+            return moreThanPythonComprehension(query,parser)
+        return False
+
+    if tree.getRuleIndex()==parser.RULE_set_query_expression:
+        if len(tree.children)==2:
+          return False
+
+        dictorset = tree.children[1]
+        if (dictorset.children[0].getRuleIndex() in [parser.RULE_query_map_expression,parser.RULE_query_expression]):
+          return moreThanPythonComprehension(dictorset.children[0],parser)
+
+        return False
+
+    return False
 
 def isChildStep(tree,parser):
     return (tree.getRuleIndex()==parser.RULE_path_step 
@@ -172,13 +216,11 @@ def get_path_expression_terminals(tree,parser):
     result = get_all_terminals(baseExpr,parser)
     
     for c in children[1:]:
+        cond = mk_tok([ getTermsEsc(c.children[0].children[1],parser) ])
         if isChildStep(c,parser):
-            result = mk_tok([ "PQChildPath", "(", result, ")" ])
-        elif isDescStep(c,parser):
-            result = mk_tok([ "PQDescPath", "(", result, ")"])
-        elif isPredStep(c,parser):
-            condition = mk_tok([ getTextList(get_all_terminals(c,parser)[2:-1]).replace('"', '\\"') ])
-            result = mk_tok([ "PQPred", "(", result, ",", '"', condition, '"',")"])
+            result = mk_tok([ "PQChildPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
+        else:
+            result = mk_tok([ "PQDescPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
     
     return result
 
@@ -186,31 +228,47 @@ def get_path_expression_terminals(tree,parser):
 def get_try_except_expression_terminals(tree,parser):
     children = tree.children
     try_expr = children[1]
-    exc = children[3] if children[3].children else None
-    except_expr = children[4]
-    exc_tokens = mk_tok(["None"]) if not exc else mk_tok([ getTermsEsc(exc,parser) ])
+    except_expr = children[3]
  
     result = mk_tok(["PQTry", "(", getTermsEsc(try_expr,parser), ",",
-               getTermsEsc(except_expr,parser), ",",
-               exc_tokens,",","locals()",")"])
+               getTermsEsc(except_expr,parser), ",","locals()",")"])
     return result
+
+# Convert the tuple constructor
+def get_tuple_constructor_terminals(tree,parser):
+    elements = [x for x in tree.children if not isinstance(x,TerminalNodeImpl)]
+    res = []
+    for e in elements:
+      value = mk_tok([getTermsEsc(e.children[0],parser)])
+      if len(e.children)==1:
+        res.append(mk_tok(["(",value,",","None",")"]))
+      else:
+        alias = mk_tok([getTermsEsc(e.children[2],parser)])
+        res.append(mk_tok(["(",value,",",alias,")"]))
+    res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
+    return mk_tok(["make_pql_tuple","(", "[",res,"]",",","locals","(",")",")"])
 
 # Process the select clause
 def process_select_clause(tree,parser):
-    sel_vars = [c for c in tree.children if ruleType(c,parser.RULE_selectvar)]
     res = []
-    for v in sel_vars:
-      if len(v.children)==1:
-        value_toks = mk_tok([getTermsEsc(v,parser)])
-        res.append(mk_tok(["(", value_toks, ",", "None",")"]))
-      else:
-        value = v.children[0]
-        alias = v.children[2]
-        value_toks = mk_tok([getTermsEsc(value,parser)])
-        alias_toks = mk_tok([getTermsEsc(alias,parser)])
-        res.append(mk_tok(["(", value_toks, ",", alias_toks,")"]))
-    res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
-    return mk_tok(["{",'"name":"select"', ",", '"select_list"', ":" , "[", res, "]", "}"])
+    if tree.getRuleIndex() == parser.RULE_select_clause:
+      e = tree.children[0]
+      if isinstance(tree.children[0], TerminalNodeImpl):
+        e = tree.children[1]
+
+      value_toks = mk_tok([getTermsEsc(e,parser)])
+      return mk_tok(["{",'"name":"select"', ",", '"expr"', ":", value_toks, "}"])
+
+    else:
+      k = tree.children[0]
+      e = tree.children[2]
+      if isinstance(tree.children[0], TerminalNodeImpl):
+        k = tree.children[1]
+        e = tree.children[3]
+
+      key_toks = mk_tok([getTermsEsc(k,parser)])
+      values_toks = mk_tok([getTermsEsc(e,parser)])
+      return mk_tok(["{",'"name":"select"', ",", '"key"', ":", key_toks, ",", '"value"', ":", value_toks, "}" ])
 
 # Process the for clause
 def process_for_clause(tree,parser):
@@ -317,12 +375,18 @@ def get_query_terminals(tree,parser):
     query_type = None
     if tree.getRuleIndex() == parser.RULE_gen_query_expression:
       query_type = "gen"
+
     elif tree.getRuleIndex() == parser.RULE_list_query_expression:
       query_type = "list"
-    elif tree.getRuleIndex() == parser.RULE_set_query_expression:
-      query_type = "set"
 
-    children = tree.children[1].children
+    elif tree.getRuleIndex() == parser.RULE_set_query_expression:
+      if tree.children[1].children[0].getRuleIndex() == parser.RULE_query_expression:
+        query_type = "set"
+      else:
+        query_type = "map"
+
+    query_expr = tree.children[1].children[0]
+    children = query_expr.children
     clauses = []
 
     # We process select clause separately, because we add it
@@ -361,6 +425,8 @@ def get_all_terminals(tree,parser):
         return get_path_expression_terminals(tree,parser)
     elif isTryExceptExpression(tree,parser):
         return get_try_except_expression_terminals(tree,parser)
+    elif isTupleConstructor(tree,parser):
+        return get_tuple_constructor_terminals(tree,parser)
     elif isQuery(tree,parser):
         return get_query_terminals(tree,parser)
     else:
