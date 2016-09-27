@@ -39,10 +39,11 @@ than they are capable of now.
 ```
 
  At the same time our queries look similar to SQL, but are more flexible and of course most of the expressions in the queres are
-in pure Python. A lot of functionality is cleaner than in SQL, like the window queries, subqueries in general, etc.
+in pure Python. A lot of functionality is cleaner than in SQL, like the window queries, subqueries in general, etc. As in Python, our query expressions can return generators, list, sets and maps.
 
+## Examples
 
-As in Python, our query expressions can return generators, list, sets and maps.
+We have a whole site dedicated to various scenarios with lots of queries where PythonQL is especially handy: www.pythonql.org
 
 
 Here is a small example PythonQL program (we're building a demo website with a number of scenarios that are especially good for solving with PythonQL):
