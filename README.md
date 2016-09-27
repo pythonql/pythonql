@@ -31,6 +31,12 @@ So we can write path expression in the query language (and elsewhere in Python e
  - Query expressions:
 Our query syntax is a strict superset of Python's comprehensions, we extend the comprehensions to do much more powerful queries
 than they are capable of now.
+```
+ [ select prod,len(p) 
+   for p in sales 
+   let prod = p.prod 
+   group by prod ]
+```
 
  At the same time our queries look similar to SQL, but are more flexible and of course most of the expressions in the queres are
 in pure Python. A lot of functionality is cleaner than in SQL, like the window queries, subqueries in general, etc.
