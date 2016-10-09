@@ -9,13 +9,12 @@ We propose the following extensions to Python( that are implemeneted in this dem
 
  - Path expressions. When working with nested data that has varied structure, path expressions are extremely useful. We have modeled our path expression on XPath, however we use a much simplified verison:
 
-  - Child step:  ```for x in data ./``` 
-  - Descendants step: ```for x in data .//```
-  - Filter step: ```for x in data filter { key == 'green' }``` (if the filter is applied to a map, ``key`` and ``value`` are defined, otherwise ``item`` is defined)
+  - Child step:  ```for x in data ./ _``` or ```for x in data ./ expr ``` where expr must evaluate to string 
+  - Descendants step: ```for x in data .// _``` or ```for x in data ../ expr``` where expr must evaluate to string
 
 So we can write path expression in the query language (and elsewhere in Python expressions) like this:
 ```
-  for x in data ./ filter {key == 'green'} .// filter { key == 'yellow' }
+  for x in data ./ "hotels" .// "room"
 ```
 
  - Try-except expressions. Python has try-except statement, but in many cases when working with dirty or semi-structured data, we need to be able to use an expression inside an iterator or the query. So we introduced a try-except expressions:
@@ -24,14 +23,27 @@ So we can write path expression in the query language (and elsewhere in Python e
    try int(x) except 0 for x in values 
 ```
 
+ - Tuple constructor. Tuples that have named columns are very useful in querying, however Python's native namedtuple is not very convenient. We have extended Python's tuple constructor syntax:
+ ```
+   (id as employee_id, sum(x) as total_salary)
+ ```
+
  - Query expressions:
-We have built our query syntax to resemble Python's comprehensions as much as possible (in the future we're planning to make our syntax a strict extension of the comprehension syntax, but its more convenient to keep them separate right now).
+Our query syntax is a strict superset of Python's comprehensions, we extend the comprehensions to do much more powerful queries
+than they are capable of now.
+```
+ [ select prod,len(p) 
+   for p in sales 
+   let prod = p.prod 
+   group by prod ]
+```
 
  At the same time our queries look similar to SQL, but are more flexible and of course most of the expressions in the queres are
-in pure Python. A lot of functionality is cleaner than in SQL, like the window queries, subqueries in general, etc.
+in pure Python. A lot of functionality is cleaner than in SQL, like the window queries, subqueries in general, etc. As in Python, our query expressions can return generators, list, sets and maps.
 
+## Examples
 
-As in Python, our query expressions can return generators, list and sets (we don't have queries that return dicts).
+We have a whole site dedicated to various scenarios with lots of queries where PythonQL is especially handy: www.pythonql.org
 
 
 Here is a small example PythonQL program (we're building a demo website with a number of scenarios that are especially good for solving with PythonQL):
@@ -53,7 +65,7 @@ ords = [ ord(1,1,"16.54"),
 custs = [ cust(1,"John"), cust(2,"Dave"), cust(3,"Boris") ]
 
 # Basic SQL query, but with some data cleaning
-res = [select name, sum(price) as sum
+res = [select (name, sum(price) as sum)
         for o in ords
         let price = try float(o.price)  except 0
         for c in custs
@@ -64,7 +76,7 @@ print (res)
 
 # Funny query, lets count how many integers there are everywhere in the data
 res = [ select x
-        for x in ords .//
+        for x in ords .// _
         let y = try isinstance(int(x),int) else False except False
         where y
         ]

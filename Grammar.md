@@ -1,7 +1,7 @@
 #PythonQL EBNF Grammar
 This document describes the grammar that we want to implement in PythonQL
 
-##Path expressions.
+## Path expressions.
 We start with path expressions, since they are a separate beast and will be
 used not only in query context, but elsewhere in the PythonQL language.
 They appear under general expression, so we will give the grammar starting
@@ -12,13 +12,10 @@ its confusing. Instead of `test` in EBNF we use `expr`, and instead of
 
 ```jflex
   expr := old_expr ( path_step )*;
-  path_step := './' | './/' | 'filter' '{' expr '}';
+  path_step := './' old_expr | './/' old_expr ;
 ```
-`'./'` is a child path step. `.//` is a descendent path step. `filter '{' expr '}'` is a filter.
-
-Predicate expression is an arbitrary Python expression, but has the following predefined variables
-avaiable for use: `item` if the predicate is applied to list and `key` and `value` if the predicate
-is applied to a map.
+`'./'` is a child path step. `.//` is a descendent path step. The expression 
+at the end can be _ or should evaluate to a string.
 
 ## Try-except expression
 Python has great exception handling and actually a lot of Python code heavily depends on it.
@@ -27,30 +24,33 @@ expressions. But they are incredibly useful there, so we introduced a simple for
 expression.
 
 ```jflex
-  try_except_expr := 'try'  expr  'except' expr ?  expr 
+  try_except_expr := 'try'  expr  'except'  expr 
 ```  
 
-##Query Expression
-This is our main grammar piece. Again, all Python expressions are written as
-`expr` production, instead of `test`. **Caution:** Python community won't like
-a whole lot of new keywords added to the language (this means old code that
-uses these keywords might need to be fixed up). So maybe we should converge
-to the fewest possible keywords later on.
+## Tuple constructor
+We need named tuples, but Python's namedtuple is not convinient enough to be useful, we really
+need a very simple syntax to create them.
+
+```jflex
+  tuple_constructor := '(' tuple_element (',' tuple_element)* ','? ')'
+  tuple_element := expr ('as' NAME)?
+```
+
+## Query Expressions
+Our queries come from a superset of Python's comprehensions.
 
 ```jflex
 query_expression := select 
                 ( for | let ) 
                 ( for | let | where | window | count | groupby | orderby )* ;
 
-select := 'select' select_var (',' select_var) * ;
-
-select_var := expr ("as" NAME)? ;
+select := 'select' ? expr ;
 
 for := 'for' NAME 'in' expr (',' NAME 'in' expr ) * ;
 
 let := 'let' NAME '=' expr (',' NAME '=' expr ) *;
 
-where := 'where' expr ;
+where := ('where'|'if') expr ;
 
 count := 'count' NAME;
 
