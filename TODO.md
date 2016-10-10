@@ -9,10 +9,8 @@ Project TODO List:
     3.1. We need a faster parser
     
     3.2. We need much better error reporting, on par with Python's
-    
-  4. Make PythonQL encoding and create a pypy repository for PythonQL
+      
+  4. Write PythonQL documentation
   
-  5. Write PythonQL documentation
-  
-  6. Add some wrappers for different databases (relational,MongoDB,CouchDB,Spark)
+  5. Add some wrappers for different databases (relational,MongoDB,CouchDB,Spark)
   
