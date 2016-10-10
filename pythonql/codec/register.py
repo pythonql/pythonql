@@ -6,7 +6,11 @@ from pythonql.parser.Preprocessor import makeProgramFromString
 
 def pythonql_transform(stream):
     try:
-        output = "\n" + makeProgramFromString("".join(stream.readlines()))
+        import_str = "\n\nfrom pythonql.Executor import *\n"
+        prog_str = "".join(stream.readlines())
+        if (prog_str):
+          prog_str = import_str + prog_str
+        output = "\n" + makeProgramFromString(prog_str)
     except Exception as ex:
         print(ex)
         traceback.print_exc()
