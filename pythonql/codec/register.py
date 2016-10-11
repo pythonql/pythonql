@@ -11,7 +11,6 @@ def pythonql_transform(stream):
         if (prog_str):
           prog_str = import_str + prog_str
         output = "\n" + makeProgramFromString(prog_str)
-        print(output)
     except Exception as ex:
         print(ex)
         traceback.print_exc()
