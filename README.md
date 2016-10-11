@@ -49,6 +49,8 @@ We have a whole site dedicated to various scenarios with lots of queries where P
 Here is a small example PythonQL program (we're building a demo website with a number of scenarios that are especially good for solving with PythonQL):
 
 ```Python
+#coding: pythonql
+#
 # This example illustrates the try-catch business in PythonQL.
 # Basically, some data might be dirty, but you still want to be able to write a simple query
 
@@ -86,16 +88,25 @@ print (len(res))
 
 ## Installing pythonql:
 
-Currently you need to clone this repository. In the future we'll make a pip installer.
+Run ```pip3 install pythonql3``` to install pythonql for Python 3x (or use pip if Python 3x is your default Python). 
+
+
+Run ```pip install pythonql2``` to install pythonql for Python 2x.
 
 ## Running pythonql:
 
-Currently PythonQL is available as a pre-processor, so you need to write a pythonql script and
-execute it, or execute a pythonql string. We have a runner that you can use to execute a file:
+PythonQL is implemented as a special encoding in a normal python script. When this encoding is specified, the
+pythonql preprocessor is run, which converts the pythonql syntax to pure python.
 
-`python3 pythonql/RunPYQL.py <pythonql program>`
+So you should have a line in the beginning of your script:
+```
+#coding: pythoql
 
-## How it will work soon (and properly):
+result = [ select y for x in [1,2,3] let y = x**2 ]
+```
 
-In the near future we will reimplement PythonQL to use file encoding, hence it will compile automatically
-if you mark your Python file as a PythonQL file.
+## Uninstalling pythonql:
+
+PythonQL installs a special file in your library to enable the pythonql encoding.
+If you decide to uninstall pythonql, run ```pip3 uninstall pythonql``` (or pip) and then delete 
+pythonql.pth file from your Python library.
