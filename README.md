@@ -88,10 +88,7 @@ print (len(res))
 
 ## Installing pythonql:
 
-Run ```pip3 install pythonql3``` to install pythonql for Python 3x (or use pip if Python 3x is your default Python). 
-
-
-Run ```pip install pythonql2``` to install pythonql for Python 2x.
+Run ```pip install pythonql``` to install pythonql. 
 
 ## Running pythonql:
 
@@ -108,5 +105,5 @@ result = [ select y for x in [1,2,3] let y = x**2 ]
 ## Uninstalling pythonql:
 
 PythonQL installs a special file in your library to enable the pythonql encoding.
-If you decide to uninstall pythonql, run ```pip3 uninstall pythonql``` (or pip) and then delete 
+If you decide to uninstall pythonql, run ```pip uninstall pythonql``` (or pip) and then delete 
 pythonql.pth file from your Python library.
