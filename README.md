@@ -41,6 +41,11 @@ than they are capable of now.
  At the same time our queries look similar to SQL, but are more flexible and of course most of the expressions in the queres are
 in pure Python. A lot of functionality is cleaner than in SQL, like the window queries, subqueries in general, etc. As in Python, our query expressions can return generators, list, sets and maps.
 
+## Documentation
+
+A short tutorial on PythonQL is available here: https://github.com/pavelvelikhov/pythonql/wiki
+
+
 ## Examples
 
 We have a whole site dedicated to various scenarios with lots of queries where PythonQL is especially handy: www.pythonql.org
@@ -75,23 +80,11 @@ res = [select (name, sum(price) as sum)
         group by c.cust_id as id, c.cust_name as name]
 
 print (res)
-
-# Funny query, lets count how many integers there are everywhere in the data
-res = [ select x
-        for x in ords .// _
-        let y = try isinstance(int(x),int) else False except False
-        where y
-        ]
-
-print (len(res))
 ```
 
 ## Installing pythonql:
 
-Run ```pip3 install pythonql3``` to install pythonql for Python 3x (or use pip if Python 3x is your default Python). 
-
-
-Run ```pip install pythonql2``` to install pythonql for Python 2x.
+Run ```pip install pythonql``` to install pythonql. 
 
 ## Running pythonql:
 
@@ -108,5 +101,5 @@ result = [ select y for x in [1,2,3] let y = x**2 ]
 ## Uninstalling pythonql:
 
 PythonQL installs a special file in your library to enable the pythonql encoding.
-If you decide to uninstall pythonql, run ```pip3 uninstall pythonql``` (or pip) and then delete 
+If you decide to uninstall pythonql, run ```pip uninstall pythonql``` (or pip) and then delete 
 pythonql.pth file from your Python library.
