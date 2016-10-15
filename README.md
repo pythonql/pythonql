@@ -43,7 +43,7 @@ in pure Python. A lot of functionality is cleaner than in SQL, like the window q
 
 ## Documentation
 
-A short tutorial on PythonQL is available here: https://github.com/pavelvelikhov/pythonql/wiki
+A short tutorial on PythonQL is available here: https://github.com/pythonql/pythonql/wiki/PythonQL-Intro-and-Tutorial
 
 
 ## Examples

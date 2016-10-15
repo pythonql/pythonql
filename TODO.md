@@ -14,3 +14,7 @@ Project TODO List:
   
   5. Add some wrappers for different databases (relational,MongoDB,CouchDB,Spark)
   
+  6. Build an optimizer and a mediator that would keep up-to-date statistics about data sources
+  
+  7. Build a fast query engine in C++ or Cython.
+  
