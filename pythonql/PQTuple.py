@@ -1,6 +1,19 @@
 # The tuples that are used within the processor, as well as
 # in the return values
 
+def str_encode(string):
+    res = ""
+    for ch in string:
+        if ch == '"':
+            res += chr(92)
+            res += '"'
+        elif ch == chr(92):
+            res += chr(92)
+            res += chr(92)
+        else:
+            res += ch
+    return res
+
 class PQTuple:
   def __init__(self,tuple,schema):
     self.tuple = tuple
@@ -50,4 +63,4 @@ class PQTuple:
     #print(self.tuple)
     itms = list(self.schema.items())
     itms.sort(key=lambda x:x[1])
-    return "{" + ",".join([ '"%s":%s' % (i[0].lstrip().rstrip(), repr(self.tuple[i[1]]))  for i in itms]) + "}"
+    return "{" + ",".join([ '"%s":%s' % (str_encode(i[0].lstrip().rstrip()), repr(self.tuple[i[1]]))  for i in itms]) + "}"

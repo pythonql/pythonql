@@ -56,7 +56,7 @@ def PQChildPath (coll,f,lcs):
     for i in coll.keys():
       if f is None:
         yield coll[i]
-      elif f and j==f:
+      elif f and i==f:
         yield coll[i]
 
 class map_tuple:
