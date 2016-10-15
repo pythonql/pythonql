@@ -4,9 +4,10 @@ import types
 # The tuples that are used within the processor, as well as
 # in the return values
 
-def wrap(list,schema):
+def wrap_tuples(list,schema):
+  _schema = {n:i for (i,n) in schema }
   for item in list:
-    yield PQTuple(item,schema)
+    yield PQTuple(item,_schema)
 
 def flatten(nested_list):
   if isinstance(nested_list,list) or isinstance(nested_list,types.GeneratorType):
