@@ -32,7 +32,7 @@ So we can write path expression in the query language (and elsewhere in Python e
 Our query syntax is a strict superset of Python's comprehensions, we extend the comprehensions to do much more powerful queries
 than they are capable of now.
 ```
- [ select prod,len(p) 
+ [ select (prod,len(p)) 
    for p in sales 
    let prod = p.prod 
    group by prod ]
