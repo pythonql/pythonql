@@ -84,7 +84,7 @@ print (res)
 
 ## Installing pythonql:
 
-Run ```pip install pythonql``` to install pythonql. 
+Run ```pip install pythonql``` to install pythonql for Python2.7, or ```pip install pythonql3``` for Python 3.x. 
 
 ## Running pythonql:
 
