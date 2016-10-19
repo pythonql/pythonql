@@ -101,5 +101,5 @@ result = [ select y for x in [1,2,3] let y = x**2 ]
 ## Uninstalling pythonql:
 
 PythonQL installs a special file in your library to enable the pythonql encoding.
-If you decide to uninstall pythonql, run ```pip uninstall pythonql``` (or pip) and then delete 
+If you decide to uninstall pythonql, run ```pip uninstall pythonql``` (or pythonql3) and then delete 
 pythonql.pth file from your Python library.
