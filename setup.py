@@ -25,7 +25,7 @@ class my_develop(_develop):
                      msg="Running post develop task")
 
 setup(name='pythonql3',  
-        version='0.9.11',
+        version='0.9.4',
         description='PythonQL Query Language Extension',
         url='http://www.pythonql.org',
         author='Pavel Velikhov',
