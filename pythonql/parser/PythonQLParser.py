@@ -97,7 +97,7 @@ class Parser:
     self.lex = Lexer()
     self.lex.build()
     self.tokens = self.lex.tokens
-    self.parser = yacc.yacc(module=self,start='file_input',tabmodule='pythonql.parser.parsertab')
+    self.parser = yacc.yacc(module=self,start='file_input',tabmodule='pythonql.parser.parsertab',debug=False)
 
   def parse(self,text):
     return self.parser.parse(text)
