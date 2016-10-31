@@ -162,7 +162,7 @@ def processSelectClause(c, table, prior_lcs):
 
   else:
     k_expr = compile(c["key"].lstrip(),'<string>','eval')
-    v_expt = compile(c["value"].lstrip(),'<string>','eval')
+    v_expr = compile(c["value"].lstrip(),'<string>','eval')
     for t in table:
       lcs = prior_lcs
       lcs.update(t.getDict())

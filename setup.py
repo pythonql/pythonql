@@ -25,14 +25,14 @@ class my_develop(_develop):
                      msg="Running post develop task")
 
 setup(name='pythonql3',  
-        version='0.9.0',
-        description='PythonQL extension',
+        version='0.9.11',
+        description='PythonQL Query Language Extension',
         url='http://www.pythonql.org',
         author='Pavel Velikhov',
         author_email='pavel(dot)velikhov(at)gmail(dot)com',
         license='MIT',
         keywords='query extension',
-        install_requires=['antlr4-python3-runtime>=4.5.3'],
+        install_requires=['ply>=3.9'],
         packages=find_packages('.'),
         package_dir = {'': '.'},
         classifiers = [ 

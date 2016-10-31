@@ -1,12 +1,7 @@
 import sys
-from antlr4 import *
-from antlr4.tree.Tree import *
-from antlr4.atn.PredictionMode import PredictionMode
-from antlr4.error.ErrorStrategy import BailErrorStrategy
 
-from pythonql.parser.CustomLexer import CustomLexer
-from pythonql.parser.Errors import CustomErrorStrategy, CustomErrorListener, BufferedErrorListener
-from pythonql.parser.PythonQLParser import PythonQLParser
+from pythonql.parser.PythonQLParser import Parser, Node, print_program
+from pythonql.parser.PythonQLLexer import PQLexerToken
 from functools import reduce
 import time
 
@@ -23,153 +18,99 @@ def str_encode(string):
             res += ch
     return res
 
-# The preprocessor inserts tokens into
-# the token stream, produced by traversing
-# the parse tree.
-class MyToken(TerminalNodeImpl):
-    def __init__(self,text):
-        self.text = text
-    def getText(self):
-        return self.text
-    def __repr__(self):
-        return self.text
-
 # Parse the PythonQL file and return a parse tree
 def parsePythonQL( s ):
-  # Set up the lexer
-  inputStream = InputStream(s)
-  lexer = CustomLexer(inputStream)
-  stream = CommonTokenStream(lexer)
 
-  # Set up the error handling stuff
-  error_handler = CustomErrorStrategy()
-  error_listener = CustomErrorListener()
-  buffered_errors = BufferedErrorListener()
-  error_listener.addDelegatee(buffered_errors)
+  p = Parser()
+  tree = p.parse(s)
 
-  # Set up the fast parser
-  parser = PythonQLParser(stream)
-  parser._interp.predictionMode = PredictionMode.SLL
-  parser.removeErrorListeners()
-  parser.errHandler = BailErrorStrategy()
-
-  try:
-    tree = parser.file_input()
-    return (tree,parser)
-  except:
-    None
-
-  lexer.reset()
-  stream = CommonTokenStream(lexer)
-  parser = PythonQLParser(stream)
-  parser.errHandler = error_handler
-
-  # Remove default terminal error listener & add our own
-  parser.removeErrorListeners()
-  parser.addErrorListener(error_listener)
-
-  # Parse the input
-  tree = parser.file_input()
-
-  if error_listener.errors_encountered > 0:
-    print(buffered_errors.buffer)
-    raise Exception("Syntax error")
-
-  return (tree,parser)
+  return tree
 
 ############################################################
 # Some methods to test what kind of subtree we're dealing with
-def isPathExpression(tree,parser):
-    if isinstance(tree,TerminalNodeImpl):
+def isPathExpression(tree):
+    if not isinstance(tree,Node):
         return False
-    return (tree.getRuleIndex()==parser.RULE_test
-                and len(tree.children)>1 )
+    return (tree.label == 'test' and tree.children[1].children)
 
-def isTryExceptExpression(tree,parser):
-    if isinstance(tree,TerminalNodeImpl):
+def isTryExceptExpression(tree):
+    if not isinstance(tree,Node):
         return False
-    return (tree.getRuleIndex()==parser.RULE_try_catch_expr
-                and len(tree.children)>1 )
+    return (tree.label == 'try_catch_expr' and len(tree.children)>1 )
 
-def isTupleConstructor(tree,parser):
-    if isinstance(tree,TerminalNodeImpl):
+def isTupleConstructor(tree):
+    if not isinstance(tree,Node):
         return False
 
-    if tree.getRuleIndex()==parser.RULE_testseq_query:
-      if tree.children[0].getRuleIndex()==parser.RULE_test_as:
-        if len(tree.children)>1:
+    if tree.label == 'testseq_query':
+      if tree.children[0].label == 'test_as_list':
+        if len(tree.children[0].children) > 1 or len(tree.children[0].children[0].children)>1:
           return True
 
     return False
 
-def moreThanPythonComprehension(tree,parser):
+def moreThanPythonComprehension(tree):
   select_cl = tree.children[0]
   if len(select_cl.children)==2 or len(select_cl.children)==4:
     return True
   for cl in tree.children[1:]:
-    if not cl.getRuleIndex() in [parser.RULE_for_clause, parser.RULE_where_clause]:
+    if not cl.label in ['for_clause','where_clause']:
       return True
-    if cl.getRuleIndex() == parser.RULE_where_clause:
+    if cl.label == 'where_clause':
       if cl.children[0].getText() == 'where':
         return True
 
   return False
 
-def isQuery(tree,parser):
-    if isinstance(tree,TerminalNodeImpl):
+def isQuery(tree):
+    if not isinstance(tree,Node):
         return False
 
-    if tree.getRuleIndex() in [parser.RULE_gen_query_expression,parser.RULE_list_query_expression]: 
+    if tree.label in ['gen_query_expression','list_query_expression']: 
         if len(tree.children)==2:
           return False
-        if tree.children[1].getRuleIndex() in [parser.RULE_testlist_query,parser.RULE_testseq_query]:
+        if tree.children[1].label in ['testlist_query','testseq_query']:
           query = tree.children[1].children[0]
-          if query.getRuleIndex() == parser.RULE_query_expression:
-            return moreThanPythonComprehension(query,parser)
+          if query.label == 'query_expression':
+            return moreThanPythonComprehension(query)
         return False
 
-    if tree.getRuleIndex()==parser.RULE_set_query_expression:
+    if tree.label =='set_query_expression':
         if len(tree.children)==2:
           return False
 
         dictorset = tree.children[1]
-        if (dictorset.children[0].getRuleIndex() in [parser.RULE_query_map_expression,parser.RULE_query_expression]):
-          return moreThanPythonComprehension(dictorset.children[0],parser)
+        if (dictorset.children[0].label in ['query_map_expression','query_expression']):
+          return moreThanPythonComprehension(dictorset.children[0])
 
         return False
 
     return False
 
-def isChildStep(tree,parser):
-    return (tree.getRuleIndex()==parser.RULE_path_step 
-               and tree.children[0].getRuleIndex()==parser.RULE_child_path_step)
+def isChildStep(tree):
+    return (tree.label == 'path_step' and tree.children[1].type == 'CHILD_AXIS')
 
-def isDescStep(tree,parser):
-    return (tree.getRuleIndex()==parser.RULE_path_step and 
-               tree.children[0].getRuleIndex()==parser.RULE_desc_path_step)
-
-def isPredStep(tree,parser):
-    return (tree.getRuleIndex()==parser.RULE_path_step and 
-               tree.children[0].getRuleIndex()==parser.RULE_pred_path_step)
+def isDescStep(tree):
+    return (tree.label == 'path_step' and tree.children[1].type == 'DESCENDANT_AXIS')
 
 ## Helper function to test the rule type (so we don't have to check
 # terminal node all the time)
 def ruleType(tree,t):
-    if isinstance(tree,TerminalNodeImpl):
+    if not isinstance(tree,Node):
         return False
-    return tree.getRuleIndex()==t
+    return tree.label ==t
 
 def tokType(tree,t):
-    if isinstance(tree,TerminalNodeImpl):
-        return tree.symbol.type==t
+    if not isinstance(tree,Node):
+        return tree.value==t
     elif len(tree.children)==1:
         return tokType(tree.children[0],t)
     return False
 
 # Get the text of all terminals in the subtree
 def getText(tree):
-    if isinstance(tree,TerminalNodeImpl):
-        return tree.getText()
+    if not isinstance(tree,Node):
+        return tree.value
     else:
         res = ""
         for c in tree.children:
@@ -179,16 +120,16 @@ def getText(tree):
 def getTextList(trees):
     return " ".join([getText(t) for t in trees])
 
-def getTermsEsc(tree,parser):
-    str = getTextList( get_all_terminals(tree,parser ) )
+def getTermsEsc(tree):
+    str = getTextList( get_all_terminals(tree) )
     str = str_encode(str)
     return '\"' + str + '\"'
 
 # Get all top non-terminals from the tree of specific types
 def getAllNodes(tree,rule_list):
-  if isinstance(tree,TerminalNodeImpl):
+  if not isinstance(tree,Node):
     return []
-  if tree.getRuleIndex() in rule_list:
+  if tree.label in rule_list:
     return [tree]
   else:
     return [x for c in tree.children for x in getAllNodes(c)]
@@ -199,120 +140,124 @@ def mk_tok(items):
         res = []
         for i in items:
             if isinstance(i,str):
-                res.append(MyToken(i))
+                res.append(PQLexerToken('PQL',i,-1,-1))
             elif isinstance(i,list):
                 res += i
             else:
                 res.append(i)
         return res
     else:
-        return [MyToken(items)]
+        return [PQLexerToken('PQL',items,-1,-1)]
 
 # Convert path expressions to Python
-def get_path_expression_terminals(tree,parser):
-    children = tree.children
+def get_path_expression_terminals(tree):
+    baseExpr = tree.children[0]
+    result = get_all_terminals(baseExpr)
     
-    baseExpr = children[0]
-    result = get_all_terminals(baseExpr,parser)
-    
-    for c in children[1:]:
-        cond = mk_tok([ getTermsEsc(c.children[0].children[1],parser) ])
-        if isChildStep(c,parser):
-            result = mk_tok([ "PQChildPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
-        else:
-            result = mk_tok([ "PQDescPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
+    path_steps = [p for p in tree.get_children('path_step') if p.children]
+    path_steps.reverse()
+
+    for p in path_steps:
+      cond = mk_tok([ getTermsEsc(p.children[2]) ])
+      if isChildStep(p):
+        result = mk_tok([ "PQChildPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
+      else:
+        result = mk_tok([ "PQDescPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
     
     return result
 
 # Convert try-catch expression to Python
-def get_try_except_expression_terminals(tree,parser):
+def get_try_except_expression_terminals(tree):
     children = tree.children
     try_expr = children[1]
     except_expr = children[3]
  
-    result = mk_tok(["PQTry", "(", getTermsEsc(try_expr,parser), ",",
-               getTermsEsc(except_expr,parser), ",","locals()",")"])
+    result = mk_tok(["PQTry", "(", getTermsEsc(try_expr), ",",
+               getTermsEsc(except_expr), ",","locals()",")"])
     return result
 
 # Convert the tuple constructor
-def get_tuple_constructor_terminals(tree,parser):
-    elements = [x for x in tree.children if not isinstance(x,TerminalNodeImpl)]
+def get_tuple_constructor_terminals(tree):
+    elements = [x for x in tree.children[0].children if isinstance(x,Node)]
     res = []
     for e in elements:
-      value = mk_tok([getTermsEsc(e.children[0],parser)])
+      value = mk_tok([getTermsEsc(e.children[0])])
       if len(e.children)==1:
         res.append(mk_tok(["(",value,",","None",")"]))
       else:
-        alias = mk_tok([getTermsEsc(e.children[2],parser)])
+        alias = mk_tok([getTermsEsc(e.children[2])])
         res.append(mk_tok(["(",value,",",alias,")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
     return mk_tok(["make_pql_tuple","(", "[",res,"]",",","locals","(",")",")"])
 
 # Process the select clause
-def process_select_clause(tree,parser):
+def process_select_clause(tree):
     res = []
-    if tree.getRuleIndex() == parser.RULE_select_clause:
+
+    # Standard select clause
+    if tree.label == 'select_clause':
       e = tree.children[0]
-      if isinstance(tree.children[0], TerminalNodeImpl):
+      if not isinstance(tree.children[0], Node):
         e = tree.children[1]
 
-      value_toks = mk_tok([getTermsEsc(e,parser)])
+      value_toks = mk_tok([getTermsEsc(e)])
       return mk_tok(["{",'"name":"select"', ",", '"expr"', ":", value_toks, "}"])
 
+    # Map select clause
     else:
       k = tree.children[0]
       e = tree.children[2]
-      if isinstance(tree.children[0], TerminalNodeImpl):
+      if not isinstance(tree.children[0], Node):
         k = tree.children[1]
         e = tree.children[3]
 
-      key_toks = mk_tok([getTermsEsc(k,parser)])
-      values_toks = mk_tok([getTermsEsc(e,parser)])
+      key_toks = mk_tok([getTermsEsc(k)])
+      value_toks = mk_tok([getTermsEsc(e)])
       return mk_tok(["{",'"name":"select"', ",", '"key"', ":", key_toks, ",", '"value"', ":", value_toks, "}" ])
 
 # Process the for clause
-def process_for_clause(tree,parser):
-    clauses = [c for c in tree.children if ruleType(c,parser.RULE_for_clause_entry)]
+def process_for_clause(tree):
+    clauses = [c for c in tree.children[1].children if isinstance(c,Node) and c.label == 'for_clause_entry']
     res = []
     for cl in clauses:
         variable = '"'+getText(cl.children[0])+'"'
-        expression = getTermsEsc(cl.children[2],parser)
+        expression = getTermsEsc(cl.children[2])
         clause_tokens =  mk_tok(["{", '"name":"for"', ",", '"var"', ":", variable, ",", '"expr"', ":", expression,"}"]) 
         res.append(clause_tokens)
     return res
 
 # Process the let clause
-def process_let_clause(tree,parser):
-    clauses = [c for c in tree.children if ruleType(c,parser.RULE_let_clause_entry)]
+def process_let_clause(tree):
+    clauses = [c for c in tree.children[1].children if isinstance(c,Node) and c.label == 'let_clause_entry']
     res = []
     for cl in clauses:
         variable = '"'+getText(cl.children[0])+'"'
-        expression = getTermsEsc(cl.children[2],parser)
+        expression = getTermsEsc(cl.children[2])
         clause_tokens =  mk_tok(["{", '"name":"let"', ",", '"var"', ":", variable, ",", '"expr"', ":", expression,"}"]) 
         res.append(clause_tokens)
     return res
 
 # Process the order by clause
-def process_orderby_clause(tree,parser):
+def process_orderby_clause(tree):
     res = []
     orderlist = tree.children[2]
-    elements = [el for el in orderlist.children if ruleType(el,parser.RULE_orderlist_el)]
+    elements = [el for el in orderlist.children if isinstance(el,Node) and el.label == 'order_element']
     for e in elements:
         ascdesc = "asc" if len(e.children)==1 else getText(e.children[1])
         ascdesc = '"'+ascdesc+'"'
-        res.append(mk_tok(["(", getTermsEsc(e.children[0],parser),",", ascdesc, ")"]))
+        res.append(mk_tok(["(", getTermsEsc(e.children[0]),",", ascdesc, ")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
     return mk_tok(["{",'"name":"orderby"', "," '"orderby_list"', ":" , "[", res, "]", "}"])
 
 # Process the group by clause
-def process_groupby_clause(tree,parser):
+def process_groupby_clause(tree):
     res = []
     groupby_list = tree.children[2]
-    for e in [e for e in groupby_list.children if ruleType(e,parser.RULE_group_by_var)]:
-        if len(e.children)==1 and tokType(e.children[0],parser.NAME):
+    for e in [e for e in groupby_list.children if isinstance(e,Node) and e.label == 'group_by_var']:
+        if len(e.children)==1 and tokType(e.children[0],'NAME'):
           res.append(mk_tok(['"'+getText(e)+'"']))
         else:
-          gby_expr = getTermsEsc(e.children[0],parser)
+          gby_expr = getTermsEsc(e.children[0])
           alias = gby_expr
           if len(e.children)==3:
              alias = '"'+getText(e.children[2])+'"'
@@ -321,42 +266,50 @@ def process_groupby_clause(tree,parser):
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
     return mk_tok(["{",'"name":"groupby"', "," '"groupby_list"', ":", "[", res, "]", "}"])
 
-def process_count_clause(tree,parser):
+def process_count_clause(tree):
     return mk_tok(["{", '"name":"count"', ",", '"var"', ":", '"'+getText(tree.children[1])+'"', "}"])
 
 # Process the where clause (this is easy)
-def process_where_clause(tree,parser):
-    return mk_tok(["{", '"name":"where"', ",", '"expr"', ":", getTermsEsc(tree.children[1],parser),"}"])
+def process_where_clause(tree):
+    return mk_tok(["{", '"name":"where"', ",", '"expr"', ":", getTermsEsc(tree.children[1]),"}"])
 
 # Process the window clause (hairy stuff)
-def get_window_vars(tree,parser,type):
+def get_window_vars(tree,type):
   res = {}
   for c in tree.children:
-    if c.getRuleIndex() == parser.RULE_current_item:
+    if c.label == 'current_item_opt' and c.children:
       res[type+"_curr"] = getText(c)
-    if c.getRuleIndex() == parser.RULE_positional_var:
+    if c.label == 'positional_var_opt' and c.children:
       res[type+"_at"] = getText(c.children[1])
-    if c.getRuleIndex() == parser.RULE_previous_var:
+    if c.label == 'previous_var_opt' and c.children:
       res[type+"_prev"] = getText(c.children[1])
-    if c.getRuleIndex() == parser.RULE_next_var:
+    if c.label == 'next_var_opt' and c.children:
       res[type+"_next"] = getText(c.children[1])
   return res
 
-def process_window_clause(tree,parser):
+def process_window_clause(tree):
   window = tree.children[0]
-  tumbling = window.getRuleIndex() == parser.RULE_tumbling_window
+  tumbling = window.label == 'tumbling_window'
   window_var = getText(window.children[3])
-  binding_seq = getTermsEsc(window.children[5],parser)
-  start_vars = get_window_vars(window.children[6].children[1],parser,"s")
-  start_cond = getTermsEsc(window.children[6].children[3],parser)
+  binding_seq = getTermsEsc(window.children[5])
+
+  start = window.get_child('window_start_cond')
+  end = window.get_child_opt('window_end_cond')
+
+  start_vars = get_window_vars(start.children[1],"s")
+  start_cond = getTermsEsc(start.children[3])
   end_vars = {}
   end_cond = None
   only = False
-  if len(window.children)==8:
-    end_vars = get_window_vars(window.children[7].children[2],parser,"e")
-    end_cond = getTermsEsc(window.children[7].children[4],parser)
-    if window.children[7].children[0].children:
+
+  if end:
+    if len(end.children) == 5:
+      end_vars = get_window_vars(end.children[2],"e")
+      end_cond = getTermsEsc(end.children[4])
       only = True
+    else:
+      end_vars = get_window_vars(end.children[1],"e")
+      end_cond = getTermsEsc(end.children[3])
 
   start_vars.update( end_vars )
   var_tokens = [mk_tok([ '"'+k+'"', ":", '"'+start_vars[k]+'"' ]) for k in start_vars ]
@@ -371,16 +324,16 @@ def process_window_clause(tree,parser):
 # Process the query. The query is turned into a function call
 # PyQuery that takes all the clauses and evaluates them.
 
-def get_query_terminals(tree,parser):
+def get_query_terminals(tree):
     query_type = None
-    if tree.getRuleIndex() == parser.RULE_gen_query_expression:
+    if tree.label == 'gen_query_expression':
       query_type = "gen"
 
-    elif tree.getRuleIndex() == parser.RULE_list_query_expression:
+    elif tree.label == 'list_query_expression':
       query_type = "list"
 
-    elif tree.getRuleIndex() == parser.RULE_set_query_expression:
-      if tree.children[1].children[0].getRuleIndex() == parser.RULE_query_expression:
+    elif tree.label == 'set_query_expression':
+      if tree.children[1].children[0].label == 'query_expression':
         query_type = "set"
       else:
         query_type = "map"
@@ -392,22 +345,24 @@ def get_query_terminals(tree,parser):
     # We process select clause separately, because we add it
     # to the end of the list
 
-    select_clause = process_select_clause(children[0], parser)
-    for c in children[1:]:
-      if c.getRuleIndex() == parser.RULE_for_clause:
-        clauses += process_for_clause(c, parser)
-      elif c.getRuleIndex() == parser.RULE_let_clause:
-        clauses += process_let_clause(c, parser)
-      elif c.getRuleIndex() == parser.RULE_where_clause:
-        clauses.append( process_where_clause(c, parser) )
-      elif c.getRuleIndex() == parser.RULE_count_clause:
-        clauses.append( process_count_clause(c, parser) )
-      elif c.getRuleIndex() == parser.RULE_group_by_clause:
-        clauses.append( process_groupby_clause(c, parser) )
-      elif c.getRuleIndex() == parser.RULE_order_by_clause:
-        clauses.append( process_orderby_clause(c, parser) )
-      elif c.getRuleIndex() == parser.RULE_window_clause:
-        clauses.append( process_window_clause(c, parser) )
+    select_clause = process_select_clause(children[0])
+    cls = [ children[1].children[0] ] + [x.children[0] for x in children[2].children]
+    
+    for c in cls:
+      if c.label == 'for_clause':
+        clauses += process_for_clause(c)
+      elif c.label == 'let_clause':
+        clauses += process_let_clause(c)
+      elif c.label == 'where_clause':
+        clauses.append( process_where_clause(c) )
+      elif c.label == 'count_clause':
+        clauses.append( process_count_clause(c) )
+      elif c.label == 'group_by_clause':
+        clauses.append( process_groupby_clause(c) )
+      elif c.label == 'order_by_clause':
+        clauses.append( process_orderby_clause(c) )
+      elif c.label == 'window_clause':
+        clauses.append( process_window_clause(c) )
       else: 
         raise Exception("Unknown clause encountered")
 
@@ -418,57 +373,22 @@ def get_query_terminals(tree,parser):
     return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ",", '"'+query_type+'"', ")"])
 
 # Process an arbitrary PythonQL program
-def get_all_terminals(tree,parser):
-    if isinstance(tree,TerminalNodeImpl):
+def get_all_terminals(tree):
+    if not isinstance(tree,Node):
         return [tree]
-    if isPathExpression(tree,parser):
-        return get_path_expression_terminals(tree,parser)
-    elif isTryExceptExpression(tree,parser):
-        return get_try_except_expression_terminals(tree,parser)
-    elif isTupleConstructor(tree,parser):
-        return get_tuple_constructor_terminals(tree,parser)
-    elif isQuery(tree,parser):
-        return get_query_terminals(tree,parser)
+    if isPathExpression(tree):
+        return get_path_expression_terminals(tree)
+    elif isTryExceptExpression(tree):
+        return get_try_except_expression_terminals(tree)
+    elif isTupleConstructor(tree):
+        return get_tuple_constructor_terminals(tree)
+    elif isQuery(tree):
+        return get_query_terminals(tree)
     else:
         children = []
         if tree.children:
-            children = reduce( lambda x,y: x+y, [get_all_terminals(c,parser) for c in tree.children])
+            children = reduce( lambda x,y: x+y, [get_all_terminals(c) for c in tree.children])
         return children
-
-####################################
-#The rest of the code creates a Python program out of PythonQL, which can be run with Python3 interpreter
-####################################
-
-def makeIndent(i):
-    return "  "*(2*i)
-
-def all_ws(t):
-    return all([x==' ' for x in t])
-
-# Generate a program from a list of text tokens
-def makeProgramFromTextTokens(tokens):
-    result = ""
-    indent = 0
-    buffer = ""
-    for t in tokens:
-        if buffer!="":
-            if t==' ' or t=='  ' or t=='\n' or t=='\n ' or t=='\r\n':
-                result += buffer + '\n'
-                buffer = ""
-            else:
-                buffer += t + " "
-        else:
-            if t==' ':
-                indent = indent -1
-            elif '\n' in t or '\r' in t:
-                indent -= 1
-                indent = indent if indent>=0 else 0
-            elif all_ws(t):
-                indent = len(t)//2
-            else:
-                buffer = makeIndent(indent)
-                buffer += t + " "
-    return result
 
 # Generate a program from a parse tree
 def makeProgramFromFile(fname):
@@ -476,8 +396,6 @@ def makeProgramFromFile(fname):
   return makeProgramFromString(str)
 
 def makeProgramFromString(str):
-  (tree,parser) = parsePythonQL(str)
-  all_terminals = get_all_terminals(tree,parser)
-  text_tokens = [t.getText() for t in all_terminals]
-  return makeProgramFromTextTokens(text_tokens)
-
+  tree = parsePythonQL(str)
+  all_terminals = get_all_terminals(tree)
+  return print_program(all_terminals)

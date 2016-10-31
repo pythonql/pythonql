@@ -1,3 +1,5 @@
+#!/Users/pavel/.pyenv/shims/python3
+
 import sys
 import tempfile
 from pythonql.Executor import *
@@ -6,20 +8,20 @@ from pythonql.parser.Preprocessor import makeProgramFromString
 import time
 
 def runProgramFromFile(fname):
-  before_time = time.time()
+  start_time = time.time()
   program = makeProgramFromFile(fname)
-  parse_time = time.time()
-  exec(program)
+  before_exec = time.time()
+  exec(program,globals(),locals())
   exec_time = time.time()
-  return (parse_time-before_time, exec_time-parse_time)
+  return (before_exec-start_time,exec_time-before_exec)
 
 def runProgramFromString(q):
-  before_time = time.time()
+  start_time = time.time()
   program = makeProgramFromString(q)
-  parse_time = time.time()
+  before_exec = time.time()
   exec(program)
   exec_time = time.time()
-  return (parse_time-before_time, exec_time-parse_time)
+  return (before_exec-star_time,exec_time-before_exec)
 
 if __name__ == '__main__':
   if len(sys.argv) != 2:
