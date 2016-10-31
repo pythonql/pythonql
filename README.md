@@ -32,7 +32,7 @@ So we can write path expression in the query language (and elsewhere in Python e
 Our query syntax is a strict superset of Python's comprehensions, we extend the comprehensions to do much more powerful queries
 than they are capable of now.
 ```
- [ select prod,len(p) 
+ [ select (prod,len(p)) 
    for p in sales 
    let prod = p.prod 
    group by prod ]
@@ -84,7 +84,7 @@ print (res)
 
 ## Installing pythonql:
 
-Run ```pip install pythonql``` to install pythonql. 
+Run ```pip install pythonql``` to install pythonql for Python2.7, or ```pip install pythonql3``` for Python 3.x. 
 
 ## Running pythonql:
 
@@ -101,5 +101,10 @@ result = [ select y for x in [1,2,3] let y = x**2 ]
 ## Uninstalling pythonql:
 
 PythonQL installs a special file in your library to enable the pythonql encoding.
-If you decide to uninstall pythonql, run ```pip uninstall pythonql``` (or pip) and then delete 
+If you decide to uninstall pythonql, run ```pip uninstall pythonql``` (or pythonql3) and then delete 
 pythonql.pth file from your Python library.
+
+## Help/Bugs/Suggestions:
+
+We have a Google group running, where you can ask any questions, report bugs or suggest improvements:
+https://groups.google.com/forum/#!forum/pythonql
