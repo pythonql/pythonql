@@ -712,7 +712,7 @@ class Parser:
     p[0] = make_list('let_clause_entry_list', p)
 
   def p_let_clause_entry(self, p):
-    """let_clause_entry : NAME '=' test"""
+    """let_clause_entry : expr_list '=' test"""
     p[0] = make_node('let_clause_entry', p)
 
   def p_window_clause(self, p):

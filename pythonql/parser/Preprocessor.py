@@ -233,9 +233,11 @@ def process_let_clause(tree):
     clauses = [c for c in tree.children[1].children if isinstance(c,Node) and c.label == 'let_clause_entry']
     res = []
     for cl in clauses:
-        variable = '"'+getText(cl.children[0])+'"'
+        vars = [mk_tok(['"%s"' % t.value]) for t in cl.children[0].terms() if t.type == 'NAME']
+        vars = mk_tok([ "[", reduce(lambda x,y: x + mk_tok([","]) + y, vars), "]" ])
+        unpack_expr = '"' + " ".join([t.value for t in cl.children[0].terms()]) + '"'
         expression = getTermsEsc(cl.children[2])
-        clause_tokens =  mk_tok(["{", '"name":"let"', ",", '"var"', ":", variable, ",", '"expr"', ":", expression,"}"]) 
+        clause_tokens =  mk_tok(["{", '"name":"let"', ",", '"vars"', ":", vars, ",", '"unpack"', ":", unpack_expr, ",", '"expr"', ":", expression,"}"]) 
         res.append(clause_tokens)
     return res
 

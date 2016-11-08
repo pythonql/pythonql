@@ -213,14 +213,26 @@ def processLetClause(c, table, prior_lcs):
 
     if not new_schema:
       new_schema = dict(t.schema)
-      new_schema[c["var"]] = len(t.schema)
+      for (i,v) in enumerate(c["vars"]):
+        new_schema[v] = len(t.schema) + i
 
     lcs = prior_lcs
     lcs.update(t.getDict())
     v = eval(comp_expr, globals(), lcs)
-    t.tuple.append(v)
-    new_t = PQTuple( t.tuple, new_schema )
-    yield new_t
+    if len(c["vars"]) == 1:
+      t.tuple.append(v)
+      new_t = PQTuple( t.tuple, new_schema )
+      yield new_t
+
+    else:
+      unpack_expr = "[ %s for %s in [ __v ]]" % (
+                      '(' + ",".join(c["vars"]) + ')', c["unpack"]) 
+      unpacked_vals = eval(unpack_expr, globals(), {'__v':v})
+      new_t_data = list(t.tuple)
+      for tv in unpacked_vals[0]:
+        new_t_data.append(tv)
+      new_t = PQTuple(new_t_data, new_schema)
+      yield new_t
 
 # Process the count clause. Similar to let, but simpler
 def processCountClause(c, table, prior_lcs):
