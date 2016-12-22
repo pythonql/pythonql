@@ -21,7 +21,7 @@ def runProgramFromString(q):
   before_exec = time.time()
   exec(program)
   exec_time = time.time()
-  return (before_exec-star_time,exec_time-before_exec)
+  return (before_exec-start_time,exec_time-before_exec)
 
 if __name__ == '__main__':
   if len(sys.argv) != 2:
