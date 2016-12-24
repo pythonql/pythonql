@@ -28,6 +28,9 @@ class PQTuple:
     else:
       return self.tuple[ self.schema[item] ]
 
+  def __iter__(self):
+    return self.tuple.__iter__()
+
   def getDict(self):
     res = {}
     for v in self.schema:
