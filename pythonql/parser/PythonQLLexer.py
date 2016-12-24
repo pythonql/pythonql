@@ -54,7 +54,7 @@ keywords = [
     'PASS', 'CONTINUE', 'BREAK', 'SELECT', 'WHERE',
     'GROUP', 'BY', 'ORDER', 'WINDOW', 'PREVIOUS', 'FOLLOWING',
     'START', 'END', 'WHEN', 'AT', 'ONLY', 'TUMBLING', 'SLIDING',
-    'ASC', 'DESC', 'COUNT' ]
+    'ASC', 'DESC', 'COUNT', 'MATCH', 'EXACT', 'FILTER' ]
 
 key_map = { k.lower():k for k in keywords }
 

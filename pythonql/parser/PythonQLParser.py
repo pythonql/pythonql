@@ -657,7 +657,8 @@ class Parser:
   def p_first_clause(self, p):
     """first_clause : for_clause
                     | let_clause 
-                    | window_clause"""
+                    | window_clause
+                    | match_clause"""
     p[0] = make_node('first_clause', p)
 
   def p_rest_clauses_list_opt(self, p):
@@ -669,6 +670,7 @@ class Parser:
     """query_clause : for_clause
                     | let_clause
                     | window_clause
+                    | match_clause
                     | group_by_clause
                     | where_clause
                     | order_by_clause
@@ -765,6 +767,39 @@ class Parser:
     """following_var_opt : FOLLOWING NAME
                          | """
     p[0] = make_node('following_var_opt', p)
+
+  def p_match_clause(self,p):
+    """match_clause : MATCH exact_or_filter_opt pattern_object IN test"""
+    p[0] = make_node('match_clause', p)
+
+  def p_exact_or_filter_opt(self,p):
+    """exact_or_filter_opt : EXACT
+                       | FILTER
+                       | """
+    p[0] = make_node('exact_or_filter_opt',p)
+
+  def p_pattern_object(self,p):
+    """pattern_object : '{' pattern_object_list '}' as_opt"""
+    p[0] = make_node('pattern_object',p)
+
+  def p_as_opt(self,p):
+    """as_opt : AS NAME
+              | """
+    p[0] = make_node('as_opt',p)
+
+  def p_pattern_object_list(self,p):
+    """pattern_object_list : pattern_object_element
+                           | pattern_object_list ',' pattern_object_element"""
+    p[0] = make_list('pattern_object_list', p)
+
+  def p_pattern_object_element(self,p):
+    """pattern_object_element : STRING_LITERAL ':' STRING_LITERAL
+                              | STRING_LITERAL ':' AS NAME WHERE test
+                              | STRING_LITERAL ':' AS NAME
+                              | STRING_LITERAL ':' WHERE test
+                              | STRING_LITERAL ':' NAME
+                              | STRING_LITERAL ':' pattern_object"""
+    p[0] = make_node('pattern_object_element', p)
 
   def p_order_by_clause(self, p):
     """order_by_clause : ORDER BY order_list"""

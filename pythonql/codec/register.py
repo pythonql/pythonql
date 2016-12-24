@@ -6,7 +6,7 @@ from pythonql.parser.Preprocessor import makeProgramFromString
 
 def pythonql_transform(stream):
     try:
-        import_str = "from pythonql.Executor import *"
+        import_str = "\nfrom pythonql.Executor import *"
         prog_str = "".join(stream.readlines())
         if (prog_str):
           prog_str = import_str + prog_str

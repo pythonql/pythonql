@@ -4,6 +4,7 @@ from pythonql.parser.PythonQLParser import Parser, Node, print_program
 from pythonql.parser.PythonQLLexer import PQLexerToken
 from functools import reduce
 import time
+import json
 
 def str_encode(string):
     res = ""
@@ -241,6 +242,64 @@ def process_let_clause(tree):
         res.append(clause_tokens)
     return res
 
+# Process the match clause
+def process_match_clause(tree):
+    exact = False
+    try:
+      exact = tree.children[1].children[0].type != 'FILTER'
+    except:
+      pass
+    vars = []
+    pattern = process_pattern(tree.children[2], vars)
+    expression = getTermsEsc(tree.children[4])
+    vars = [mk_tok(['"' + v + '"']) for v in vars]
+    vars = mk_tok([ "[", reduce(lambda x,y: x + mk_tok([","]) + y, vars), "]" ])
+    res = mk_tok(["{", '"name":"match"' , "," , '"exact"' , ":", repr(exact) , "," , '"vars"', ":", vars, ",", '"pattern"', ":", json.dumps(pattern), ",",
+                       '"expr"', ":", expression, "}"])
+    
+    return res
+
+def process_pattern(tree, vars):
+    if (len(tree.children)>1 and isinstance(tree.children[1],Node) 
+                   and tree.children[1].label=='pattern_object_list'):
+      list = tree.children[1]
+      res = []
+      for l in list.children:
+        if not isinstance(l,Node):
+          continue
+        res.append(process_pattern(l,vars))
+      if len(tree.children[3].children):
+        var = getText(tree.children[3].children[1])
+        res.append({'bind_parent_to':var})
+        vars.append(var)
+      return res
+
+    elif (len(tree.children)==1 and isinstance(tree.children[0],Node)
+                   and tree.children[0].label == 'pattern_object_element'):
+      return process_pattern(tree.children[0],vars)
+
+    else:
+      res = {'match':getText(tree.children[0])}
+      if isinstance(tree.children[2],Node) and tree.children[2].label == 'pattern_object':
+        res['pattern'] = process_pattern(tree.children[2],vars)
+        return res
+      if tree.children[2].type == 'STRING_LITERAL':
+        res['const_cond'] = getText(tree.children[2])
+        return res
+      if tree.children[2].type == 'NAME':
+        res['var_cond'] = getText(tree.children[2])
+        return res
+      if tree.children[2].type == 'WHERE':
+        res['expr_cond'] = getText(tree.children[3])
+        return res
+
+      if tree.children[2].type == 'AS':
+        res['bind_to'] = getText(tree.children[3])
+        vars.append(res['bind_to'])
+        if len(tree.children) == 6:
+          res['expr_cond'] = getText(tree.children[5])
+        return res
+
 # Process the order by clause
 def process_orderby_clause(tree):
     res = []
@@ -357,6 +416,8 @@ def get_query_terminals(tree):
         clauses += process_for_clause(c)
       elif c.label == 'let_clause':
         clauses += process_let_clause(c)
+      elif c.label == 'match_clause':
+        clauses.append( process_match_clause(c) )
       elif c.label == 'where_clause':
         clauses.append( process_where_clause(c) )
       elif c.label == 'count_clause':

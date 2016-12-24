@@ -135,6 +135,8 @@ def processClause(c, table, prior_locs):
     return processForClause(c, table, prior_locs)
   elif c["name"] == "let":
     return processLetClause(c, table, prior_locs)
+  elif c["name"] == "match":
+    return processMatchClause(c, table, prior_locs)
   elif c["name"] == "count":
     return processCountClause(c, table, prior_locs)
   elif c["name"] == "where":
@@ -176,7 +178,6 @@ def processForClause(c, table, prior_lcs):
   new_schema = None
   comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
 
-  new_table = PQTable( new_schema )
   for t in table:
     if not new_schema:
       new_schema = dict(t.schema)
@@ -234,6 +235,81 @@ def processLetClause(c, table, prior_lcs):
       new_t = PQTuple(new_t_data, new_schema)
       yield new_t
 
+# Process the match claise
+def processMatchClause(c, table, prior_lcs):
+  clause_expr = compile(c['expr'], "<string>", "eval")
+
+  # Fetch and compile all expressions in the
+  # pattern match clause
+  e_patterns = []
+  patterns = list(c['pattern'])
+  while patterns:
+    p = patterns.pop() 
+    if 'expr_cond' in p:
+      e_patterns.append(p)
+    if 'pattern' in p:
+      patterns.append(p['pattern'])
+  
+  for ep in e_patterns:
+    ep['expr_cond'] = compile(ep["expr_cond"], "<string>", "eval")
+
+  new_schema = None
+  for t in table:
+    if not new_schema:
+      new_schema = dict(t.schema)
+      for (i,v) in enumerate(c["vars"]):
+        new_schema[v] = len(t.schema) + i
+
+    lcs = prior_lcs
+    lcs.update(t.getDict())
+    vals = eval(clause_expr, globals(), lcs)
+
+    for v in vals:
+      if not hasattr(v, '__contains__'):
+        continue
+      
+      new_t_data = list(t.tuple) + [None]*len(c['vars'])
+      new_t = PQTuple(new_t_data, new_schema)
+
+      if match_pattern(c['pattern'], c['exact'], v, new_t, lcs):
+        yield new_t
+
+def match_pattern(ps, isExact, v, new_t, lcs):
+  all_heads = []
+  for p in [x for x in ps if 'match' in x]:
+    match = p['match'][1:-1]
+    all_heads.append(match)
+
+    if match not in v:
+      return False
+
+    if 'const_cond' in p:
+      if v[match] != p['const_cond'][1:-1]:
+        return False
+
+    if 'bind_to' in p:
+      new_t[p['bind_to']] = v[match]
+      lcs.update({p['bind_to']:v[match]})
+
+    if 'expr_cond' in p:
+      val = eval(p['expr_cond'], globals(), lcs)
+      if not val:
+        return False
+      
+    if 'pattern' in p:
+      if not match_pattern(p['pattern'], isExact, v[match], new_t, lcs):
+        return False
+
+  if isExact and any([x for x in v if x not in all_heads]):
+    return False
+
+  bind_parent = next((x for x in ps if 'bind_parent_to' in x), None)
+  if bind_parent:
+    new_t[bind_parent['bind_parent_to']] = v
+    lcs.update({bind_parent['bind_parent_to']:v})
+
+  return True
+  
 # Process the count clause. Similar to let, but simpler
 def processCountClause(c, table, prior_lcs):
   new_schema = None
@@ -278,7 +354,6 @@ def processGroupByClause(c, table, prior_lcs):
   # Non-key variables
   non_key_vars = [v for v in schema if not v in gby_aliases ]
   new_schema = {v:i for (i,v) in enumerate( gby_aliases + non_key_vars )}
-  new_table = []
   for k in grp_table:
     t = PQTuple([None]*len(new_schema), new_schema)
     #Copy over the key
@@ -405,7 +480,6 @@ def processWindowClause(c, table, prior_lcs):
   for v in c["vars"]:
     var_mapping[v] = c["vars"][v]
 		
-  new_table = PQTable( new_schema )
   for t in table:
     if not schema:
       schema = t.schema
