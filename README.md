@@ -93,7 +93,7 @@ pythonql preprocessor is run, which converts the pythonql syntax to pure python.
 
 So you should have a line in the beginning of your script:
 ```
-#coding: pythoql
+#coding: pythonql
 
 result = [ select y for x in [1,2,3] let y = x**2 ]
 ```
