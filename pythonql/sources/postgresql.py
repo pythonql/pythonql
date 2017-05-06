@@ -321,7 +321,7 @@ class PostgresTable(RDBMSTable):
     self.engine = engine
     self.table_name = table_name
     self.schema_name = schema_name
-    self.table = Table(table_name, MetaData(), autoload=True, autoload_with=engine)
+    self.table = Table(table_name, MetaData(), autoload=True, autoload_with=engine, schema=schema_name)
 
   # Check whether this source supports the given expression, given a set of clauses
   # already pushed to the source
@@ -359,7 +359,7 @@ class PostgresTable(RDBMSTable):
             if 'database' in c:
                 src_meta = c['database']
                 src = c['database']['source']
-                tables.append( (src.table_name, c['vars'][0]))
+                tables.append( (src.table_name if not src.schema_name else "%s.%s" % (src.schema_name,src.table_name), c['vars'][0]))
                 output_tuple_vars.append(c['vars'][0])
                 
             # We don't do anything otherwise yet (for example if the for clause
@@ -426,7 +426,11 @@ class PostgresTable(RDBMSTable):
     for table_name,v in tuple_vars:
         schema[v] = len(schema)
         tuple_schema = {}
-        table = Table(table_name, MetaData(), autoload=True, autoload_with=self.engine)
+        schema_name = None
+        if len(table_name.split('.'))>1:
+            schema_name,table_name = table_name.split('.')
+
+        table = Table(table_name, MetaData(), autoload=True, autoload_with=self.engine, schema=schema_name)
         for c in table.columns:
             tuple_schema[c.name] = len(tuple_schema)
         tuple_schemas.append( tuple_schema )
