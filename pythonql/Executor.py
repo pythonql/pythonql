@@ -1,6 +1,6 @@
 from pythonql.PQTuple import PQTuple
-from pythonql.PQTable import PQTable
 from pythonql.helpers import flatten
+from pythonql.Rewriter import rewrite
 import json
 import types
 
@@ -116,6 +116,7 @@ def emptyTuple(schema):
 def PyQuery( clauses, prior_locs, returnType ):
   data = []
   data.append( emptyTuple([]) )
+  clauses = rewrite(clauses, prior_locs)
   for c in clauses:
     data = processClause(c, data, prior_locs)
   if returnType == "gen":
@@ -135,6 +136,10 @@ def processClause(c, table, prior_locs):
     return processForClause(c, table, prior_locs)
   elif c["name"] == "let":
     return processLetClause(c, table, prior_locs)
+  elif c["name"] == "join":
+    return processJoin(c, table, prior_locs)
+  elif c["name"] == "db_source":
+    return c["database"].execute(c["query"],c["tuple_vars"],c["vars"])
   elif c["name"] == "match":
     return processMatchClause(c, table, prior_locs)
   elif c["name"] == "count":
@@ -148,7 +153,7 @@ def processClause(c, table, prior_locs):
   elif c["name"] == "window":
     return processWindowClause(c, table, prior_locs)
   else:
-    raise Exception("Unknown clause %s encountered" % c[0] )
+    raise Exception("Unknown clause %s encountered" % c["name"] )
   
 # Process Select clause
 # We still keep that feature of generating tuples for now
@@ -234,6 +239,110 @@ def processLetClause(c, table, prior_lcs):
         new_t_data.append(tv)
       new_t = PQTuple(new_t_data, new_schema)
       yield new_t
+
+# Process a join
+def processJoin(c, table, prior_lcs):
+  new_schema = None
+  left_arg = c['left']
+  right_arg = c['right']
+  left_conds = c['left_conds']
+  right_conds = c['right_conds']
+ 
+  join_type = 'nl'
+  dir = 'right'
+  if 'hint' in c:
+    join_type = c['hint']['join_type']
+    dir = c['hint']['dir']
+
+  if dir == 'left':
+    left_arg,right_arg = right_arg,left_arg
+
+  r_init_data = []
+  r_init_data.append( emptyTuple([]) )
+
+  # Build an index on the right relation, if we're doing
+  # an index join. 
+  index = None
+  if join_type == 'index':
+    index = {}
+    r_data = r_init_data
+    if isinstance(c['right'], list):
+        for c2 in c['right']:
+            r_data = processClause(c2, r_data, prior_lcs)
+    else:
+        r_data = processJoin(c['right'], r_data, prior_lcs)
+
+    for t in r_data:
+        index_tuple = [] 
+        for rcond in right_conds:
+            lcs = prior_lcs
+            lcs.update(t.getDict())
+            rcond_val = eval(rcond, globals(), lcs)
+            index_tuple.append( rcond_val )
+        index_tuple = tuple(index_tuple)
+        if not index_tuple in index:
+            index[ index_tuple ] = []
+        index[ index_tuple ].append( t )
+
+  # Iterate over the tuples of the left relation and
+  # compute the tuple of condition vars
+
+  if isinstance(c['left'], list):
+      for c2 in c['left']:
+          table = processClause(c2, table, prior_lcs)
+  else:
+      table = processJoin(c['left'], table, prior_lcs)
+
+  for t in table:
+     cond_tuple = []
+     for lcond in left_conds:
+         lcs = prior_lcs
+         lcs.update(t.getDict())
+         lcond_val = eval(lcond, globals(), lcs)
+         cond_tuple.append( lcond_val )
+     cond_tuple = tuple(cond_tuple)
+
+     if index:
+         if cond_tuple in index:
+             for t2 in index[cond_tuple]:
+                 if not new_schema:
+                     new_schema = dict(t.schema)
+                     for i,_ in enumerate(t2):
+                         v = [x for x in t2.schema.items() if x[1]==i][0][0]
+                         new_schema[v] = len(new_schema) + i
+                 new_t_data = list(t.tuple)
+                 new_t_data += list(t2.tuple)
+                 new_t = PQTuple(new_t_data, new_schema)
+                 yield new_t
+         else:
+             continue
+     else:
+          r_data = r_init_data
+          if isinstance(c['right'], list):
+              for c2 in c['right']:
+                  r_data = processClause(c2, r_data, prior_lcs)
+          else:
+              r_data = processJoin(c['right'], r_data, prior_lcs)
+
+          for t2 in r_data:
+              rcond_tuple = []
+              for rcond in right_conds:
+                  lcs = prior_lcs
+                  lcs.update(t2.getDict())
+                  rcond_val = eval(rcond, globals(), lcs)
+                  rcond_tuple.append( rcond_val )
+
+              rcond_tuple = tuple(rcond_tuple)
+              if cond_tuple == rcond_tuple:
+                 if not new_schema:
+                     new_schema = dict(t.schema)
+                     for i,_ in enumerate(t2):
+                         v = [x for x in t2.schema.items() if x[1]==i][0][0]
+                         new_schema[v] = len(new_schema) + i
+                 new_t_data = list(t.tuple)
+                 new_t_data += list(t2.tuple)
+                 new_t = PQTuple(new_t_data, new_schema)
+                 yield new_t
 
 # Process the match claise
 def processMatchClause(c, table, prior_lcs):
