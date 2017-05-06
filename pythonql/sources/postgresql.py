@@ -10,6 +10,9 @@ class Unsupported(Exception):
 class TypeError(Exception):
   None
 
+# This function prints an ast of an expression in PostgreSQL SQL format that can
+# be included in the queries.
+
 def print_ast_psql(a,paren=False):
     res = ""
     if isinstance(a,boolOp_e):
@@ -74,6 +77,9 @@ def print_ast_psql(a,paren=False):
         
     return res
 
+# This function translates python AST into an AST that is closer to PostgreSQL and
+# can be directly converted into an SQL string expression
+
 def psql_translate_ast(expr,symtab):
     if type(expr)==compare_e:
         op_map = {'==':'=', '!=':"<>"}
@@ -137,9 +143,13 @@ def psql_translate_ast(expr,symtab):
                 x[j] = psql_translate_ast(y,symtab)
     return expr
 
+# Translate and convert a python AST into an SQL string expression
 
 def psql_translate_expr(e,symtab):
     return print_ast_psql(psql_translate_ast(e,symtab))
+
+# Map datatypes from SQL Alchemy datatypes to internal PythonQL
+# datatypes.
 
 def psql_map_type(t):
     if isinstance(t,String):
@@ -154,6 +164,8 @@ def psql_map_type(t):
         return {'type':'time'}
     elif isinstance(t,DateTime):
         return {'type':'datetime'}
+
+# Python operator and function signature tables
 
 python_signs_table = {
     ('+',('number','number')) : 'number',
@@ -172,6 +184,12 @@ python_signs_table = {
     ('parse',('string',)) : 'datetime'
 }
 
+# Mapping from Python operators and functions
+# into PostgreSQL ops and functions. The mapping
+# is type dependent (for example '+' operator can
+# become a '+' in SQL or a '||' string concatenation
+# operator
+
 psql_func_map = {
     ('+',('number','number')) : '+',
     ('-',('number','number')) : '-',
@@ -188,6 +206,9 @@ psql_func_map = {
     ('lower',('string',)) : 'lower',
     ('parse',('string',)) : 'parse'
 }
+
+# Infer the type an AST expression that we're trying to send
+# to the database
 
 def psql_infer_types_expr(expr,symtab):
     
@@ -278,6 +299,8 @@ def psql_infer_types_expr(expr,symtab):
         else:
             raise TypeError("Illegal attribute '%s'" % expr.attribute.id )
 
+# Infer the datatypes of all variables in the list of clauses
+
 def psql_infer_types(clauses):
     symtab = {}
     for c in clauses:
@@ -289,6 +312,8 @@ def psql_infer_types(clauses):
         elif c['name'] == 'where':
             psql_infer_types_expr(get_ast(c['expr']),symtab)
     return symtab
+
+# PostgreSQL data source. 
 
 class PostgresTable(RDBMSTable):
 
@@ -308,6 +333,10 @@ class PostgresTable(RDBMSTable):
         return True
     except Unsupported:
         return False
+
+  # Return a db_source clause with an SQL query that corresponds to the clauses that
+  # have been pushed into this source. Only produce variables that are mentioned in the
+  # project_list
 
   def wrap(self,clauses,project_list):
     tables = []
@@ -387,6 +416,9 @@ class PostgresTable(RDBMSTable):
             'vars':output_vars
     }
 
+  # Execute an SQL query and wrap the result in a generator
+  # that produces PQTuple objects (possibly nested)
+
   def execute(self,query,tuple_vars,vars):
     res = self.engine.execute(query)
     schema = {}
@@ -418,4 +450,3 @@ class PostgresTable(RDBMSTable):
             i += 1
 
         yield PQTuple( out_t, schema )
-            

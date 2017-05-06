@@ -1,11 +1,15 @@
 from pythonql.Ast import *
 from pythonql.sources.source import RDBMSTable
 
+# Helper function
 def ensure_list(x):
     if isinstance(x,list):
         return x
     else:
         return [x]
+
+# Provide a list of variable that were defined in the given
+# list of clauses
 
 def clause_vars(clauses):
     vs = set()
@@ -19,7 +23,9 @@ def clause_vars(clauses):
             vs = vs.union({v[1] for v in c['groupby_list']})            
     return vs
 
-# Need to add a case for the match clause here
+# Compute the list of variables that are referenced in these
+# clauses
+
 def clause_live_vars(clauses):
     vs = set()
     for c in clauses:
@@ -40,6 +46,9 @@ def clause_live_vars(clauses):
                 vs = vs.union(get_all_vars(e))
     return vs
 
+# Check if an expression looks like a join condition
+# This just checks the syntax of an expression
+
 def is_join_cond(e):
     if isinstance(e,compare_e):
         if len(e.ops)==1 and e.ops[0] == '==':
@@ -47,6 +56,8 @@ def is_join_cond(e):
                 if all([type(x) in [name_e,attribute_e] for x in  visit(e.comparators[0]) ]):
                     return True
     return False
+
+# Visit all joins that are children of a given join
 
 def visit_joins(j):
     yield j
@@ -58,6 +69,9 @@ def visit_joins(j):
     if not isinstance(j['right'],list):
         for jj in visit_joins(j['right']):
             yield jj
+
+# Main rewriter routine, pushed as much work as possible into the database sources,
+# creates joins and join condition and handles query hints.
 
 def rewrite(clauses,visible_vars):
     source_id = 0

@@ -1,6 +1,8 @@
 import ast,_ast
 from collections import namedtuple
 
+# List of classes for our internal AST
+
 boolOp_e = namedtuple('boolOp_e',['op','args'])
 binaryOp_e = namedtuple('binaryOp_e',['op','args'])
 unaryOp_e = namedtuple('unaryOp_e',['op','arg'])
@@ -32,6 +34,8 @@ index_e = namedtuple('index_e',['value'])
 
 comprehension_e = namedtuple('comprehension',['target','iter','ifs'])
 
+# Mapping from Python's AST into the operators of our internal AST
+
 opMap = {_ast.Add:'+', _ast.Sub:'-', _ast.Mult:'*', _ast.Div:'/', 
         _ast.Mod:'%', _ast.Pow:'**', _ast.LShift:'<<', ast.RShift:'>>',
         _ast.BitOr:'???', _ast.BitXor:'???', _ast.BitAnd:'???', _ast.FloorDiv:'//',
@@ -39,6 +43,8 @@ opMap = {_ast.Add:'+', _ast.Sub:'-', _ast.Mult:'*', _ast.Div:'/',
         _ast.Lt:'<', _ast.Gt:'>', _ast.LtE:'<=', _ast.GtE:'>=', _ast.Is:'is',
         _ast.IsNot:'isnot', _ast.In:'in', _ast.NotIn:"notin", _ast.And:'and',
         _ast.Or:'or'}
+
+# Convert Python AST into our internal AST
 
 def convert_ast(a):
     
@@ -158,6 +164,8 @@ def is_literal(t):
 def is_comprehension(t):
     return type(t) in comprehension_types
     
+# Get all variables used in the AST expression
+
 def get_all_vars(a):
     if is_ast(a) and not is_literal(a):
         if type(a) == name_e:
@@ -192,6 +200,9 @@ def get_all_vars(a):
         return retvars
     return set()
 
+# Replace variables inside an expression accorind to the table
+# of mappings
+
 def replace_vars(a,table):
     if is_ast(a) and not is_literal(a):
         if type(a) == name_e:
@@ -215,6 +226,8 @@ def replace_vars(a,table):
  
     return a
 
+# Visit all nodes in the AST
+
 def visit(a):
     if is_ast(a):
         yield a
@@ -228,8 +241,13 @@ def visit(a):
                 for z in visit(y):
                     yield z
 
+# Compile into Python's AST and convert into our internal AST format
+
 def get_ast(expr):
     return convert_ast(compile(expr, '<string>', 'eval',ast.PyCF_ONLY_AST).body)
+
+# Precedence table for figuring out whether we need to parenthesize an expression
+# when printing it out
 
 class_prec_table = {
     ('boolOp_e','compareOp_e'):True,
@@ -269,6 +287,9 @@ op_prec_table = {
     ('%','-'):1
 }
 
+# A method that decides whether a node should be parenthesised when printed
+# given its parent AST node
+
 def needs_paren(child,parent):
     if (type(child),type(parent)) in class_prec_table:
         return True
@@ -291,6 +312,8 @@ def str_encode(string):
         else:
             res += ch
     return res
+
+# Print AST into a Python expression format
 
 def print_ast(a,paren=False):
     res = ""

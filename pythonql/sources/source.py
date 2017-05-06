@@ -1,3 +1,6 @@
+# Interface for the data source used in queries.
+# Currently only includes query capabilities.
+
 class Source:
   def __init__(self):
     None
@@ -5,8 +8,14 @@ class Source:
   def isQueryable(self):
     return False
 
-  def supportsOp(self):
-    return True
+  # Check if the source will support the execution of an expression,
+  # given that clauses have already been pushed into it.
+
+  def supports(self,clauses,expr):
+    return False
+
+# Database source for all relational database sources. Currently there is
+# no common functionality across different RDBMS sources
 
 class RDBMSTable(Source):
   def isQueryable(self):
