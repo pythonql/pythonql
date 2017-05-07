@@ -9,7 +9,7 @@ def pythonql_transform(stream):
         import_str = "from pythonql.Executor import *"
         prog_str = "".join(stream.readlines())
         if (prog_str):
-          prog_str = import_str + prog_str
+          prog_str = import_str + '\n' + prog_str
         output = makeProgramFromString(prog_str)
     except Exception as ex:
         sys.stderr.write(ex.message + '\n')
