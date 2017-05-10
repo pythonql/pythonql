@@ -92,7 +92,7 @@ def cust_journey_test():
               where e.event_name=='loan_issued' and
               (parse(e.date) - last_request_date) > 0 ]  ])
 
-  assert n_closed_and_refused/n_closed == 0.25
+  assert n_closed_and_refused/float(n_closed) == 0.25
 
   # Compute the list of closed accounts
   closed = [
@@ -119,7 +119,7 @@ def cust_journey_test():
           for d1 in reminder_dates, d2 in reminder_dates
           where d1 != d2 and (d1 - d2).days < 30 ]]
 
-  assert len(too_many_reminders)/len(closed) == 0.5
+  assert len(too_many_reminders)/float(len(closed)) == 0.5
 
   res = np.mean([
 
