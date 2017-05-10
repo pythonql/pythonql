@@ -10,7 +10,6 @@ import time
 def runProgramFromFile(fname):
   start_time = time.time()
   program = makeProgramFromFile(fname)
-  print(program)
   before_exec = time.time()
   exec(program,globals(),locals())
   exec_time = time.time()

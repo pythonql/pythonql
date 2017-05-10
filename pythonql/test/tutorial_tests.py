@@ -58,9 +58,10 @@ def q6_test():
         for x in range(1,5),
             y in range(1,5)
         where x > y
-        group by x**2 as x_squared ]
+        group by x**2 as x_squared 
+        order by x_squared ]
 
-  assert res[0].x_squared==16 and res[0].y==[1,2,3]
+  assert res[2].x_squared==16 and res[2].y==[1,2,3]
   assert res[1].x_squared==9 and res[1].y==[1,2]
 
 def q7_test():

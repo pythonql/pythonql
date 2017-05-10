@@ -54,11 +54,11 @@ def moreThanPythonComprehension(tree):
   select_cl = tree.children[0]
   if len(select_cl.children)==2 or len(select_cl.children)==4:
     return True
-  for cl in tree.children[1:]:
+  for cl in (tree.children[1].children + [x.children[0] for x in tree.children[2].children ]):
     if not cl.label in ['for_clause','where_clause']:
       return True
     if cl.label == 'where_clause':
-      if cl.children[0].getText() == 'where':
+      if cl.children[0].value == 'where':
         return True
 
   return False

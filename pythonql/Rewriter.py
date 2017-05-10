@@ -109,7 +109,7 @@ def rewrite(clauses,visible_vars):
             source = get_ast(c['expr'])
             if (len(c['vars']) == 1 
                     and isinstance(source,name_e) 
-                    and isinstance(visible_vars[source.id], RDBMSTable) ):
+                    and isinstance(visible_vars.get(source.id), RDBMSTable) ):
                 database = visible_vars[source.id]
                 meta = {"type":"database", 
                             "database":database.engine,
@@ -288,6 +288,6 @@ def rewrite(clauses,visible_vars):
     if join:
         return [join] + rest_clauses
     else:
-        return source_clauses[0] + rest_clauses
+        return ( source_clauses[0] if source_clauses else [] ) + rest_clauses
 
 

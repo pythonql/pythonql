@@ -546,8 +546,13 @@ class Parser:
     """logical : logical AND logical
                | logical OR logical
                | NOT logical
-               | comparison"""
-    p[0] = make_node('comparison', p)
+               | is_not_expr"""
+    p[0] = make_node('logical', p)
+
+  def p_is_not_expr(self, p):
+    """is_not_expr : is_not_expr IS NOT is_not_expr
+                   | comparison"""
+    p[0] = make_node('is_not_expr', p)
 
   def p_comparison(self, p):
     """comparison : comparison comp_op comparison
@@ -563,20 +568,13 @@ class Parser:
                | NOT_EQ_1
                | NOT_EQ_2
                | IN
-               | NOT IN
-               | IS
-               | IS NOT"""
+               | IS"""
     p[0] = make_node('comp_op', p)
 
   def p_not_in_expr(self, p):
-    """not_in_expr : is_not_expr NOT IN not_in_expr
-                   | is_not_expr"""
-    p[0] = make_node('not_in_expr', p)
-
-  def p_is_not_expr(self, p):
-    """is_not_expr : star_expr IS NOT is_not_expr 
+    """not_in_expr : not_in_expr NOT IN not_in_expr
                    | star_expr"""
-    p[0] = make_node('is_not_expr', p)
+    p[0] = make_node('not_in_expr', p)
 
   def p_star_expr(self, p):
     """star_expr : '*' expr

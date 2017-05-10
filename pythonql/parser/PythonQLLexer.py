@@ -56,7 +56,8 @@ keywords = [
     'START', 'END', 'WHEN', 'AT', 'ONLY', 'TUMBLING', 'SLIDING',
     'ASC', 'DESC', 'COUNT', 'MATCH', 'EXACT', 'FILTER' ]
 
-key_map = { k.lower():k for k in keywords }
+key_map = { k.lower():k for k in keywords if not k in ['NONE','TRUE','FALSE']}
+key_map.update( {'None':'NONE', 'True':'TRUE', 'False':'FALSE'} )
 
 # The lexer class
 class Lexer:

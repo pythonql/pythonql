@@ -27,7 +27,8 @@ tuple_e = namedtuple('tuple_e',['values'])
 dict_e = namedtuple('dict_e',['keys','values'])
 
 attribute_e = namedtuple('attribute_e',['value','attribute'])
-subscript_e = namedtuple('subscript_e',['value','slice'])
+subscript_e = namedtuple('subscript_e',['value','lower','upper','step'])
+subscript_ind_e = namedtuple('subscript_e',['value','index'])
 
 slice_e = namedtuple('slice_e',['lower','upper','step'])
 index_e = namedtuple('index_e',['value'])
@@ -36,7 +37,7 @@ comprehension_e = namedtuple('comprehension',['target','iter','ifs'])
 
 # Mapping from Python's AST into the operators of our internal AST
 
-opMap = {_ast.Add:'+', _ast.Sub:'-', _ast.Mult:'*', _ast.Div:'/', 
+opMap = {_ast.Add:'+', _ast.Sub:'-', _ast.UAdd:'+', _ast.USub:'-', _ast.Mult:'*', _ast.Div:'/', 
         _ast.Mod:'%', _ast.Pow:'**', _ast.LShift:'<<', ast.RShift:'>>',
         _ast.BitOr:'???', _ast.BitXor:'???', _ast.BitAnd:'???', _ast.FloorDiv:'//',
         _ast.Invert:'???', _ast.Not:'not', _ast.Eq:'==', _ast.NotEq:'!=',
@@ -67,6 +68,15 @@ def convert_ast(a):
     
     elif isinstance(a,_ast.Attribute):
         return attribute_e(convert_ast(a.value), name_e(a.attr))
+
+    elif isinstance(a,_ast.Subscript):
+        if isinstance(a.slice,ast.Index):
+            return subscript_ind_e(convert_ast(a.value), convert_ast(a.slice.value))
+        else:
+            return subscript_e(convert_ast(a.value),
+                               convert_ast(a.slice.lower),
+                               convert_ast(a.slice.upper),
+                               convert_ast(a.slice.step))
     
     elif isinstance(a,_ast.Compare):
         return compare_e(convert_ast(a.left),
@@ -140,6 +150,7 @@ all_ast_types = [boolOp_e,
                  tuple_e,
                  dict_e,
                  attribute_e,
+                 subscript_ind_e,
                  subscript_e,
                  slice_e,
                  index_e,
@@ -182,8 +193,14 @@ def get_all_vars(a):
                 t = a.args[0].values
                 vs = [v for x in t for v in get_all_vars(get_ast(x.values[0].value))]
                 return set(vs)
+
+            # And we need a special case for nested queries also. However, instead of digging
+            # into the nested query, we just return an impossible variable, so that nothing can
+            # satisfy its dependency.
+            if isinstance(a.func, name_e) and a.func.id == 'PyQuery':
+                return {"#nested_query"}
             else:        
-                vs = [v for x in a[1:] for v in get_all_vars(x) ]
+                vs = [v for x in a[1:] for y in x for v in get_all_vars(y) ]
                 return set(vs)
         
         if type(a)==attribute_e:
@@ -253,9 +270,23 @@ class_prec_table = {
     ('boolOp_e','compareOp_e'):True,
     ('boolOp_e','binaryOp_e'):True,
     ('boolOp_e','unaryOp_e'):True,
+    ('boolOp_e','attribute_e'):True,
+    ('boolOp_e','subscript_e'):True,
+    ('boolOp_e','subscript_ind_e'):True,
     ('compareOp_e','binaryOp_e'):True,
     ('compareOp_e','unaryOp_e'):True,
-    ('binaryOp_e','unaryOp_e'):True
+    ('compareOp_e','attribute_e'):True,
+    ('compareOp_e','subscript_e'):True,
+    ('compareOp_e','subscript_ind_e'):True,
+    ('binaryOp_e','unaryOp_e'):True,
+    ('binaryOp_e','attribute_e'):True,
+    ('binaryOp_e','subscript_e'):True,
+    ('binaryOp_e','subscript_ind_e'):True,
+    ('unaryOp_e','attribute_e'):True,
+    ('unaryOp_e','subscript_e'):True,
+    ('unaryOp_e','subscript_ind_e'):True,
+    ('attribute_e','subscript_e'):True,
+    ('attribute_e','subscript_ind_e'):True
   }
 
 op_prec_table = {
@@ -291,7 +322,7 @@ op_prec_table = {
 # given its parent AST node
 
 def needs_paren(child,parent):
-    if (type(child),type(parent)) in class_prec_table:
+    if (type(child).__doc__.split('(')[0], type(parent).__doc__.split('(')[0]) in class_prec_table:
         return True
     try:
         if (child.op,parent.op) in op_prec_table:
@@ -336,6 +367,12 @@ def print_ast(a,paren=False):
     elif isinstance(a,attribute_e):
         res = print_ast(a.value,needs_paren(a.value,a)) + "." + print_ast(a.attribute)
     
+    elif isinstance(a,subscript_ind_e):
+        res = print_ast(a.value,needs_paren(a.value,a)) + "[" + print_ast(a.index) + "]"
+
+    elif isinstance(a,subscript_e):
+        res = print_ast(a.value,needs_paren(a.value,a)) + "[" + ":".join([print_ast(x) if x else "" for x in [a.lower,a.upper,a.step]]) + "]"
+
     elif isinstance(a,compare_e):
         res = print_ast(a.left,needs_paren(a.left,a))
         for i in range(len(a.ops)):
@@ -358,16 +395,34 @@ def print_ast(a,paren=False):
             res += print_ast(a.starargs)
         res += ")"
         
-    # elif isinstance(a,_ast.ListComp):    
-    # elif isinstance(a,_ast.SetComp):    
-    # elif isinstance(a,_ast.DictComp):    
-    # elif isinstance(a,_ast.comprehension):
+    elif isinstance(a,listComp_e):    
+        res += '[' + print_ast(a.expr) + " " + " ".join([print_ast(x) for x in a.generators]) + ']'
+
+    elif isinstance(a,setComp_e):    
+        res += '{' + print_ast(a.expr) + " " + " ".join([print_ast(x) for x in a.generators]) + '}'
+
+    elif isinstance(a,dictComp_e):    
+        res += '{' + print_ast(a.key) + ':' + print_ast(a.value) + ' ' + " ".join([print_ast(x) for x in a.generators]) + '}'
+
+    elif isinstance(a,comprehension_e):
+        res += 'for ' + print_ast(a.target) + ' in ' + print_ast(a.iter)
+        if a.ifs:
+            res += ' if ' + print_ast(a.ifs)
     
-    # elif isinstance(a,_ast.List):    
-    # elif isinstance(a,_ast.Tuple):
-    # elif isinstance(a,_ast.Set):
-    
-    # elif isinstance(a,_ast.Dict):
+    elif isinstance(a,list_e):    
+        res += '[' + ','.join([print_ast(x) for x in a.values]) + ']'
+
+    elif isinstance(a,tuple_e):
+        res += '(' + ','.join([print_ast(x) for x in a.values])
+        if len(a.values) == 1:
+          res += ','
+        res += ')'
+
+    elif isinstance(a,set_e):
+        res += '{' + ','.join([print_ast(x) for x in a.values]) + '}'
+        
+    elif isinstance(a,dict_e):
+        res += '{' + ','.join([print_ast(k) + ':' + print_ast(v) for (k,v) in zip(a.keys,a.values)]) + '}'
     
     elif isinstance(a,str_literal):
         res = '"' + str_encode(a.value) + '"'
