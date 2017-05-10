@@ -45,6 +45,12 @@ opMap = {_ast.Add:'+', _ast.Sub:'-', _ast.UAdd:'+', _ast.USub:'-', _ast.Mult:'*'
         _ast.IsNot:'isnot', _ast.In:'in', _ast.NotIn:"notin", _ast.And:'and',
         _ast.Or:'or'}
 
+def isStarArg(x):
+     try:
+       return isinstance(x,_ast.Starred)
+     except:
+       return False
+
 # Convert Python AST into our internal AST
 
 def convert_ast(a):
@@ -85,9 +91,9 @@ def convert_ast(a):
     
     elif isinstance(a,_ast.Call):
         return call_e(convert_ast(a.func),
-                     [convert_ast(x) for x in a.args if not isinstance(x,_ast.Starred)],
+                     [convert_ast(x) for x in a.args if not isStarArg(x)],
                      [{k.arg : convert_ast(k.value)} for k in a.keywords],
-                     [convert_ast(x.value) for x in a.args if isinstance(x,_ast.Starred)]
+                     [convert_ast(x.value) for x in a.args if isStarArg(x)]
                      )
     
     elif isinstance(a,_ast.ListComp):
