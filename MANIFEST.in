@@ -1,1 +1,2 @@
 include pythonql.pth
+recursive-exclude * __pycache__
