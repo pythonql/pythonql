@@ -1,0 +1,10 @@
+RELEASE 0.9.5
+
+In this release we have added:
+
+ 1. Support for PostgreSQL sources via SQL Alchemy. Now parts of PythonQL queries that can
+   be pushed to a Postgres source will be translated into SQL and run in the database. More
+   details are available in PythonQL documentation.
+ 2. Join hints: you can specificy nested-loops and index-joins now and specificy which side
+   should be indexed/iterated over. More details are available in PythonQL documentation.
+ 3. Minor bug fixes

@@ -38,7 +38,7 @@ class NoseTestCommand(TestCommand):
         nose.run_exit(argv=['nosetests'])
 
 setup(name='pythonql',  
-        version='0.9.45',
+        version='0.9.51',
         description='PythonQL Query Language Extension',
         long_description="""
 PythonQL Query Language Extension
@@ -52,7 +52,7 @@ PythonQL won't break your existing code, you just need to mark PythonQL files wi
 """,
         url='http://www.pythonql.org',
         author='Pavel Velikhov',
-        author_email='pavel(dot)velikhov(at)gmail(dot)com',
+        author_email='pavel.velikhov@gmail.com',
         license='MIT',
         keywords='query extension',
         setup_requires=['ply>=3.9'],
