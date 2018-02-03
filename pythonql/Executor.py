@@ -1,6 +1,9 @@
+from pythonql.algebra.operator import plan_from_list
+from pythonql.algebra.operators import *
 from pythonql.PQTuple import PQTuple
 from pythonql.helpers import flatten
 from pythonql.Rewriter import rewrite
+from pythonql.debug import Debug
 import json
 import types
 
@@ -116,9 +119,16 @@ def emptyTuple(schema):
 def PyQuery( clauses, prior_locs, returnType ):
   data = []
   data.append( emptyTuple([]) )
-  clauses = rewrite(clauses, prior_locs)
-  for c in clauses:
-    data = processClause(c, data, prior_locs)
+
+  clauses = list(clauses)
+  clauses.reverse()
+
+  plan = plan_from_list(clauses)
+  plan = rewrite(plan, prior_locs)
+
+  if Debug().print_optimized:
+      print("Rewritten query:",plan)
+  data = plan.execute(data, prior_locs)
   if returnType == "gen":
     return data
   elif returnType == "list":
@@ -128,48 +138,21 @@ def PyQuery( clauses, prior_locs, returnType ):
   else:
     return dict(data)
 
-# Process clauses
-def processClause(c, table, prior_locs):
-  if c["name"] == "select":
-    return processSelectClause(c, table, prior_locs)
-  elif c["name"] == "for":
-    return processForClause(c, table, prior_locs)
-  elif c["name"] == "let":
-    return processLetClause(c, table, prior_locs)
-  elif c["name"] == "join":
-    return processJoin(c, table, prior_locs)
-  elif c["name"] == "db_source":
-    return c["database"].execute(c["query"],c["tuple_vars"],c["vars"])
-  elif c["name"] == "match":
-    return processMatchClause(c, table, prior_locs)
-  elif c["name"] == "count":
-    return processCountClause(c, table, prior_locs)
-  elif c["name"] == "where":
-    return processWhereClause(c, table, prior_locs)
-  elif c["name"] == "groupby":
-    return processGroupByClause(c, table, prior_locs)
-  elif c["name"] == "orderby":
-    return processOrderByClause(c, table, prior_locs)
-  elif c["name"] == "window":
-    return processWindowClause(c, table, prior_locs)
-  else:
-    raise Exception("Unknown clause %s encountered" % c["name"] )
-  
 # Process Select clause
 # We still keep that feature of generating tuples for now
 def processSelectClause(c, table, prior_lcs):
   # If this is a list/set comprehension:
-  if "expr" in c:
+  if c.expr:
     # Compile the expression:
-    e = compile(c["expr"].lstrip(), '<string>','eval')
+    e = compile(c.expr.lstrip(), '<string>','eval')
     for t in table:
       lcs = prior_lcs
       lcs.update(t.getDict())
       yield eval(e,globals(),lcs)
 
   else:
-    k_expr = compile(c["key"].lstrip(),'<string>','eval')
-    v_expr = compile(c["value"].lstrip(),'<string>','eval')
+    k_expr = compile(c.key_expr.lstrip(),'<string>','eval')
+    v_expr = compile(c.value_expr.lstrip(),'<string>','eval')
     for t in table:
       lcs = prior_lcs
       lcs.update(t.getDict())
@@ -181,18 +164,18 @@ def processSelectClause(c, table, prior_lcs):
 # product of the input table with new sequence
 def processForClause(c, table, prior_lcs):
   new_schema = None
-  comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
+  comp_expr = compile(c.expr.lstrip(), "<string>", "eval")
 
   for t in table:
     if not new_schema:
       new_schema = dict(t.schema)
-      for (i,v) in enumerate(c["vars"]):
+      for (i,v) in enumerate(c.vars):
         new_schema[v] = len(t.schema) + i
 
     lcs = prior_lcs
     lcs.update(t.getDict())
     vals = eval(comp_expr, globals(), lcs)
-    if len(c["vars"]) == 1:
+    if len(c.vars) == 1:
       for v in vals:
         new_t_data = list(t.tuple)
         new_t_data.append(v)
@@ -202,7 +185,7 @@ def processForClause(c, table, prior_lcs):
     else:
       for v in vals:
         unpack_expr = "[ %s for %s in [ __v ]]" % (
-                      '(' + ",".join(c["vars"]) + ')', c["unpack"])
+                      '(' + ",".join(c.vars) + ')', c.unpack)
         unpacked_vals = eval(unpack_expr, globals(), {'__v':v})
         new_t_data = list(t.tuple)
         for tv in unpacked_vals[0]:
@@ -213,26 +196,26 @@ def processForClause(c, table, prior_lcs):
 # Process the let clause. Here we just add a variable to each
 # input tuple
 def processLetClause(c, table, prior_lcs):
-  comp_expr = compile(c["expr"].lstrip(), "<string>", "eval")
+  comp_expr = compile(c.expr.lstrip(), "<string>", "eval")
   new_schema = None
   for t in table:
 
     if not new_schema:
       new_schema = dict(t.schema)
-      for (i,v) in enumerate(c["vars"]):
+      for (i,v) in enumerate(c.vars):
         new_schema[v] = len(t.schema) + i
 
     lcs = prior_lcs
     lcs.update(t.getDict())
     v = eval(comp_expr, globals(), lcs)
-    if len(c["vars"]) == 1:
+    if len(c.vars) == 1:
       t.tuple.append(v)
       new_t = PQTuple( t.tuple, new_schema )
       yield new_t
 
     else:
       unpack_expr = "[ %s for %s in [ __v ]]" % (
-                      '(' + ",".join(c["vars"]) + ')', c["unpack"]) 
+                      '(' + ",".join(c.vars) + ')', c.unpack) 
       unpacked_vals = eval(unpack_expr, globals(), {'__v':v})
       new_t_data = list(t.tuple)
       for tv in unpacked_vals[0]:
@@ -241,18 +224,16 @@ def processLetClause(c, table, prior_lcs):
       yield new_t
 
 # Process a join
-def processJoin(c, table, prior_lcs):
+def processJoin(c, table, prior_lcs, left_arg, right_arg):
   new_schema = None
-  left_arg = c['left']
-  right_arg = c['right']
-  left_conds = c['left_conds']
-  right_conds = c['right_conds']
+  left_conds = c.left_conds
+  right_conds = c.right_conds
  
   join_type = 'nl'
   dir = 'right'
-  if 'hint' in c:
-    join_type = c['hint']['join_type']
-    dir = c['hint']['dir']
+  if c.hint:
+    join_type = c.hint['join_type']
+    dir = c.hint['dir']
 
   if dir == 'left':
     left_arg,right_arg = right_arg,left_arg
@@ -266,11 +247,7 @@ def processJoin(c, table, prior_lcs):
   if join_type == 'index':
     index = {}
     r_data = r_init_data
-    if isinstance(c['right'], list):
-        for c2 in c['right']:
-            r_data = processClause(c2, r_data, prior_lcs)
-    else:
-        r_data = processJoin(c['right'], r_data, prior_lcs)
+    r_data = right_arg.execute(r_data, prior_lcs)
 
     for t in r_data:
         index_tuple = [] 
@@ -287,12 +264,7 @@ def processJoin(c, table, prior_lcs):
   # Iterate over the tuples of the left relation and
   # compute the tuple of condition vars
 
-  if isinstance(c['left'], list):
-      for c2 in c['left']:
-          table = processClause(c2, table, prior_lcs)
-  else:
-      table = processJoin(c['left'], table, prior_lcs)
-
+  table = left_arg.execute(table, prior_lcs)
   for t in table:
      cond_tuple = []
      for lcond in left_conds:
@@ -318,11 +290,7 @@ def processJoin(c, table, prior_lcs):
              continue
      else:
           r_data = r_init_data
-          if isinstance(c['right'], list):
-              for c2 in c['right']:
-                  r_data = processClause(c2, r_data, prior_lcs)
-          else:
-              r_data = processJoin(c['right'], r_data, prior_lcs)
+          r_data = right_arg.execute(r_data, prior_lcs)
 
           for t2 in r_data:
               rcond_tuple = []
@@ -346,12 +314,12 @@ def processJoin(c, table, prior_lcs):
 
 # Process the match claise
 def processMatchClause(c, table, prior_lcs):
-  clause_expr = compile(c['expr'], "<string>", "eval")
+  clause_expr = compile(c.expr, "<string>", "eval")
 
   # Fetch and compile all expressions in the
   # pattern match clause
   e_patterns = []
-  patterns = list(c['pattern'])
+  patterns = list(c.pattern)
   while patterns:
     p = patterns.pop() 
     if 'expr_cond' in p:
@@ -366,7 +334,7 @@ def processMatchClause(c, table, prior_lcs):
   for t in table:
     if not new_schema:
       new_schema = dict(t.schema)
-      for (i,v) in enumerate(c["vars"]):
+      for (i,v) in enumerate(c.vars):
         new_schema[v] = len(t.schema) + i
 
     lcs = prior_lcs
@@ -377,10 +345,10 @@ def processMatchClause(c, table, prior_lcs):
       if not hasattr(v, '__contains__'):
         continue
       
-      new_t_data = list(t.tuple) + [None]*len(c['vars'])
+      new_t_data = list(t.tuple) + [None]*len(c.vars)
       new_t = PQTuple(new_t_data, new_schema)
 
-      if match_pattern(c['pattern'], c['exact'], v, new_t, lcs):
+      if match_pattern(c.pattern, c.exact, v, new_t, lcs):
         yield new_t
 
 def match_pattern(ps, isExact, v, new_t, lcs):
@@ -426,7 +394,7 @@ def processCountClause(c, table, prior_lcs):
 
     if not new_schema:
       new_schema = dict(t.schema)
-      new_schema[c["var"]] = len(t.schema)
+      new_schema[c.var] = len(t.schema)
 
     new_t = PQTuple( t.tuple + [i], new_schema )
     yield new_t
@@ -434,9 +402,9 @@ def processCountClause(c, table, prior_lcs):
 # Process the group-by
 def processGroupByClause(c, table, prior_lcs):
   gby_aliases = [g if isinstance(g,str) else g[1]
-                                for g in c["groupby_list"]]
+                                for g in c.groupby_list]
   gby_exprs = [g if isinstance(g,str) else g[0]
-                                for g in c["groupby_list"]]
+                                for g in c.groupby_list]
   comp_exprs = [compile(e,'<string>','eval') for e in gby_exprs]
   grp_table = {}
 
@@ -484,7 +452,7 @@ def processGroupByClause(c, table, prior_lcs):
 
 # Process where clause
 def processWhereClause(c, table, prior_lcs):
-  comp_expr = compile(c["expr"].lstrip(),"<string>","eval")
+  comp_expr = compile(c.expr.lstrip(),"<string>","eval")
   for t in table:
     lcs = prior_lcs
     lcs.update(t.getDict())
@@ -498,8 +466,8 @@ def processOrderByClause(c, table, prior_lcs):
   # For each sort we first need to compute a sort value (could
   # be some expression)
 
-  sort_exprs = [ compile(os[0].lstrip(),"<string>","eval") for os in c["orderby_list"]]
-  sort_rev = [ o[1]=='desc' for o in c["orderby_list"]]
+  sort_exprs = [ compile(os[0].lstrip(),"<string>","eval") for os in c.orderby_list]
+  sort_rev = [ o[1]=='desc' for o in c.orderby_list]
 
   def computeSortSpec(tup,sort_spec):
     lcs = prior_lcs
@@ -562,20 +530,20 @@ def check_start_condition(all_vars,clause,locals,var_mapping):
   locals.update( start_bindings )
 
   #evaluate the when condition
-  return eval( clause["s_when"], globals(), locals )
+  return eval( clause.s_when, globals(), locals )
   
 # Check the end condition of the window.
 
 def check_end_condition(vars,clause,locals,var_mapping):
   # If there is no 'when' clause, return False
-  if not clause["e_when"]:
+  if not clause.e_when:
     return False
 
   end_vars = set(vars.keys()).intersection( set(var_mapping.keys()))
   end_binding = { var_mapping[v] : vars[v] for v in end_vars }
 
   locals.update( end_binding )
-  res = eval( clause["e_when"], globals(), locals)
+  res = eval( clause.e_when, globals(), locals)
 
   return res
 
@@ -586,21 +554,21 @@ def processWindowClause(c, table, prior_lcs):
 
   # Create window variable name mapping
   var_mapping = {}
-  for v in c["vars"]:
-    var_mapping[v] = c["vars"][v]
+  for v in c.vars:
+    var_mapping[v] = c.vars[v]
 		
   for t in table:
     if not schema:
       schema = t.schema
       # Create a new schema with window variables added
       new_schema = dict(t.schema)
-      for v in c["vars"]:
-        new_schema[c["vars"][v]] = len(new_schema)
+      for v in c.vars:
+        new_schema[c.vars[v]] = len(new_schema)
 
     lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     # Evaluate the binding sequence
-    binding_seq = list(eval(c["in"], globals(), lcs))
+    binding_seq = list(eval(c.binding_seq, globals(), lcs))
 
     # Create initial window variables
 
@@ -613,7 +581,7 @@ def processWindowClause(c, table, prior_lcs):
       # Try to open a new window
       # in case of tumbling windows, only open a
       # window if there are no open windows
-      if not c["tumbling"] or (c["tumbling"] and not open_windows):
+      if not c.tumbling or (c.tumbling and not open_windows):
         vars = make_window_vars()
         fill_in_start_vars(vars,binding_seq,i)
         if check_start_condition(vars,c,dict(lcs),var_mapping):
@@ -635,7 +603,7 @@ def processWindowClause(c, table, prior_lcs):
           
     #close or remove all remaining open windows
     #if only is specified, we ignore non-closed windows
-    if not c["only"]:
+    if not c.only:
       closed_windows.extend(open_windows)
     
     # create a new tuple by extending the tuple from previous clauses

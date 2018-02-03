@@ -3,6 +3,7 @@ import sys
 import traceback
 from encodings import utf_8
 from pythonql.parser.Preprocessor import makeProgramFromString
+from pythonql.debug import Debug
 
 def pythonql_transform(stream):
     try:
@@ -13,6 +14,7 @@ def pythonql_transform(stream):
         else:
           return ''
         output = makeProgramFromString(prog_str)
+        Debug().last_program = output
     except Exception as ex:
         print(ex,file=sys.stderr)
         raise

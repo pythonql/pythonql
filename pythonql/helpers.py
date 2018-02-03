@@ -9,6 +9,12 @@ def wrap_tuples(list,schema):
   for item in list:
     yield PQTuple(item,_schema)
 
+def outer(tuple_list):
+  if not tuple_list:
+     return [ None ]
+  else:
+     return tuple_list
+
 def flatten(nested_list):
   if isinstance(nested_list,list) or isinstance(nested_list,types.GeneratorType):
     for i in nested_list:

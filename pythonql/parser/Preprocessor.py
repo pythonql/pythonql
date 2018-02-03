@@ -2,6 +2,7 @@ import sys
 
 from pythonql.parser.PythonQLParser import Parser, Node, print_program
 from pythonql.parser.PythonQLLexer import PQLexerToken
+from pythonql.algebra import *
 from functools import reduce
 import time
 import json
@@ -202,7 +203,7 @@ def process_select_clause(tree):
         e = tree.children[1]
 
       value_toks = mk_tok([getTermsEsc(e)])
-      return mk_tok(["{",'"name":"select"', ",", '"expr"', ":", value_toks, "}"])
+      return mk_tok(["Select(", value_toks, ")"])
 
     # Map select clause
     else:
@@ -214,7 +215,7 @@ def process_select_clause(tree):
 
       key_toks = mk_tok([getTermsEsc(k)])
       value_toks = mk_tok([getTermsEsc(e)])
-      return mk_tok(["{",'"name":"select"', ",", '"key"', ":", key_toks, ",", '"value"', ":", value_toks, "}" ])
+      return mk_tok(["Select(", value_toks, ",", key_toks, ")" ])
 
 # Process the for clause
 def process_for_clause(tree):
@@ -225,7 +226,7 @@ def process_for_clause(tree):
         vars = mk_tok([ "[", reduce(lambda x,y: x + mk_tok([","]) + y, vars), "]" ])
         unpack_expr = '"' + " ".join([t.value for t in cl.children[0].terms()]) + '"'
         expression = getTermsEsc(cl.children[2])
-        clause_tokens =  mk_tok(["{", '"name":"for"', ",", '"vars"', ":", vars, ",", '"unpack"', ":", unpack_expr, ",", '"expr"', ":", expression,"}"]) 
+        clause_tokens =  mk_tok(["For(", vars, ",", unpack_expr, ",", expression,")"]) 
         res.append(clause_tokens)
     return res
 
@@ -238,7 +239,7 @@ def process_let_clause(tree):
         vars = mk_tok([ "[", reduce(lambda x,y: x + mk_tok([","]) + y, vars), "]" ])
         unpack_expr = '"' + " ".join([t.value for t in cl.children[0].terms()]) + '"'
         expression = getTermsEsc(cl.children[2])
-        clause_tokens =  mk_tok(["{", '"name":"let"', ",", '"vars"', ":", vars, ",", '"unpack"', ":", unpack_expr, ",", '"expr"', ":", expression,"}"]) 
+        clause_tokens =  mk_tok(["Let(", vars, ",", unpack_expr, ",", expression,")"]) 
         res.append(clause_tokens)
     return res
 
@@ -254,8 +255,7 @@ def process_match_clause(tree):
     expression = getTermsEsc(tree.children[4])
     vars = [mk_tok(['"' + v + '"']) for v in vars]
     vars = mk_tok([ "[", reduce(lambda x,y: x + mk_tok([","]) + y, vars), "]" ])
-    res = mk_tok(["{", '"name":"match"' , "," , '"exact"' , ":", repr(exact) , "," , '"vars"', ":", vars, ",", '"pattern"', ":", json.dumps(pattern), ",",
-                       '"expr"', ":", expression, "}"])
+    res = mk_tok(["Match(", repr(exact) , ",",  vars, ",", json.dumps(pattern), ",", expression, ")"])
     
     return res
 
@@ -310,7 +310,7 @@ def process_orderby_clause(tree):
         ascdesc = '"'+ascdesc+'"'
         res.append(mk_tok(["(", getTermsEsc(e.children[0]),",", ascdesc, ")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
-    return mk_tok(["{",'"name":"orderby"', "," '"orderby_list"', ":" , "[", res, "]", "}"])
+    return mk_tok(["OrderBy(", "[", res, "]", ")"])
 
 # Process the group by clause
 def process_groupby_clause(tree):
@@ -327,14 +327,14 @@ def process_groupby_clause(tree):
           res.append(mk_tok(["(", gby_expr, ",", alias, ")"]))
         
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
-    return mk_tok(["{",'"name":"groupby"', "," '"groupby_list"', ":", "[", res, "]", "}"])
+    return mk_tok(["GroupBy(", "[", res, "]", ")"])
 
 def process_count_clause(tree):
-    return mk_tok(["{", '"name":"count"', ",", '"var"', ":", '"'+getText(tree.children[1])+'"', "}"])
+    return mk_tok(["Count(", '"'+getText(tree.children[1])+'"', ")"])
 
 # Process the where clause (this is easy)
 def process_where_clause(tree):
-    return mk_tok(["{", '"name":"where"', ",", '"expr"', ":", getTermsEsc(tree.children[1]),"}"])
+    return mk_tok(["Where(", getTermsEsc(tree.children[1]),")"])
 
 # Process the window clause (hairy stuff)
 def get_window_vars(tree,type):
@@ -378,11 +378,8 @@ def process_window_clause(tree):
   var_tokens = [mk_tok([ '"'+k+'"', ":", '"'+start_vars[k]+'"' ]) for k in start_vars ]
   var_tokens = reduce(lambda x,y: x + mk_tok([","]) + y, var_tokens)
 
-  return mk_tok([ "{", '"name":"window"', "," , '"tumbling"', ":", repr(tumbling), "," '"only"', ":", repr(only), ",",
-			'"in"', ":", binding_seq, ",",
-                        '"s_when"', ":", start_cond, ",",
-                        mk_tok([ '"e_when"', ":", end_cond, ","]) if end_cond else [],
-                        '"vars"', ":", "{", '"var"', ":", '"'+window_var+'"', ",", var_tokens, "}", "}" ])
+  return mk_tok([ "Window(", '"' + window_var + '"', ",", repr(tumbling), ",", repr(only), ",", binding_seq, ",", start_cond, ",",
+                         end_cond, ",", "{", '"var"', ":", '"'+window_var+'"', ",", var_tokens, "}", ")" ])
                         
 # Process the query. The query is turned into a function call
 # PyQuery that takes all the clauses and evaluates them.

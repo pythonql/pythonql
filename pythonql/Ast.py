@@ -1,4 +1,5 @@
 import ast,_ast
+from pythonql.algebra.operators import *
 from collections import namedtuple
 
 # List of classes for our internal AST
@@ -175,6 +176,34 @@ def is_literal(t):
 def is_comprehension(t):
     return type(t) in comprehension_types
     
+
+# Get all alias variables (where a is an alias, if a comes from
+# some expression of the form 'a.x')
+
+def get_aliases(a):
+    if is_ast(a) and not is_literal(a):
+        
+        if type(a)==call_e:
+            vs = [v for x in a[1:] for y in x for v in get_aliases(y) ]
+            return set(vs)
+
+        if type(a)==attribute_e:
+            if type(a.value)==name_e:
+                return { a.value.id }
+            else:
+                return set()
+
+        retvars = set()
+        for x in a:
+            if is_ast(x):
+                retvars = retvars.union(get_aliases(x))
+            elif type(x)==list:
+                for y in x:
+                    if is_ast(y):
+                        retvars = retvars.union(get_aliases(y))
+        return retvars
+    return set()
+        
 # Get all variables used in the AST expression
 
 def get_all_vars(a):
@@ -194,11 +223,17 @@ def get_all_vars(a):
                 vs = [v for x in t for v in get_all_vars(get_ast(x.values[0].value))]
                 return set(vs)
 
-            # And we need a special case for nested queries also. However, instead of digging
-            # into the nested query, we just return an impossible variable, so that nothing can
-            # satisfy its dependency.
+            # And we need a special case for nested queries also. 
             if isinstance(a.func, name_e) and a.func.id == 'PyQuery':
-                return {"#nested_query"}
+                # Dig into the clauses of the nested query:
+                clauses = eval(print_ast(a.args[0]))
+                defined_vars = set()
+                used_vars = set()
+                for c in clauses:
+                    used_vars = used_vars.union( c.used_vars() )
+                            
+                return used_vars - defined_vars
+
             else:        
                 vs = [v for x in a[1:] for y in x for v in get_all_vars(y) ]
                 return set(vs)
@@ -216,6 +251,74 @@ def get_all_vars(a):
                         retvars = retvars.union(get_all_vars(y))
         return retvars
     return set()
+
+# Get all attribute mappings
+# Similar to get all variables, but for each variable we also provide a mapping,
+# if the variable binds to a simple attribute expression
+
+def get_all_var_mappings(a):
+    if is_ast(a) and not is_literal(a):
+        if type(a) == name_e:
+            return {a.id:None}
+        
+        if is_comprehension(a):
+            vs = get_all_var_mappings(a.expr)
+            for g in a.generators:
+                gvs = vs.update( get_all_var_mappings(g) )
+                for tv in get_all_vars(g.target):
+                    if tv in gvs:
+                        del gvs[tv]
+                vs.update( gvs )
+            return vs
+
+        if type(a)==call_e:
+            # We need a special case for the make_pql_tuple
+            if isinstance(a.func, name_e) and a.func.id == 'make_pql_tuple':
+                t = a.args[0].values
+                vs = {}
+                for tvs in [get_all_var_mappings(get_ast(x.values[0].value)) for x in t]:
+                   vs.update( tvs)
+                return vs
+
+            if isinstance(a.func, name_e) and a.func.id == 'PyQuery':
+                vs = {}
+                # Dig into the clauses of the nested query:
+                clauses = eval(print_ast(a.args[0]))
+                defined_vars = set()
+                used_vars = set()
+                for c in clauses:
+                    used_vars = used_vars.union( c.used_vars() )
+                            
+                for v in (used_vars - defined_vars):
+                    vs[v] = None
+
+                return vs
+
+            else:        
+                vs = {}
+                for nested_vs in [get_all_var_mappins(y) for y in x]:
+                    vs.update( nested_vs )
+
+                return vs
+        
+        if type(a)==attribute_e:
+            if type(a.value)==name_e:
+                return {a.value.id : a.attribute.id}
+
+            return get_all_var_mappings(a.value)
+        
+        retvars = {}
+        for x in a:
+            if is_ast(x):
+                retvars.update(get_all_var_mappings(x))
+            elif type(x)==list:
+                for y in x:
+                    if is_ast(y):
+                        retvars.update(get_all_var_mappings(y))
+        return retvars
+    return {}
+
+
 
 # Replace variables inside an expression accorind to the table
 # of mappings

@@ -11,7 +11,7 @@ class Source:
   # Check if the source will support the execution of an expression,
   # given that clauses have already been pushed into it.
 
-  def supports(self,clauses,expr):
+  def supports(self,clauses,expr,visible_vars):
     return False
 
 # Database source for all relational database sources. Currently there is
