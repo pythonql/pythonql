@@ -108,3 +108,5 @@ pythonql.pth file from your Python library.
 
 We have a Google group running, where you can ask any questions, report bugs or suggest improvements:
 https://groups.google.com/forum/#!forum/pythonql
+
+We also have a telegram group: https://t.me/joinchat/DD9Pag7fUDBrcdVj7uQ2ig
