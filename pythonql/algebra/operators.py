@@ -1,11 +1,25 @@
 from pythonql.algebra.operator import operator
 
+class MakeList(operator):
+  def __init__(self,input_vars, output_var):
+    self.input_vars = input_vars
+    self.output_var = output_var
+
+  def defined_vars(self):
+    return { self.output_var }
+
+  def used_vars(self):
+    return self.input_vars
+    
 class Count(operator):
   def __init__(self,var):
     self.var = var
 
   def defined_vars(self):
     return { self.var }
+
+  def used_vars(self):
+    return set()
 
   def execute(self, table, prior_locs):
     from pythonql.Executor import processCountClause

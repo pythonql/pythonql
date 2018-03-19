@@ -4,6 +4,15 @@ from pythonql.algebra.operator import OpTreeNode, plan_from_list
 from pythonql.sources.source import RDBMSTable
 import re
 
+# Create a synthetic variable for outerjoin
+cvar_count = 0
+def make_cvar():
+    global cvar_count
+    retval = "synthetic_count_"
+    retval += repr(cvar_count)
+    cvar_count += 1
+    return retval
+   
 # Check if an expression looks like a join condition
 # This just checks the syntax of an expression
 
@@ -378,7 +387,7 @@ def rewrite(plan,visible_vars):
 
             if source_meta[1]['type'] == 'let_outerjoin':
                 all_left_vars = oj_tree.left_child.defined_vars()
-                new_counter_var = make_new_cvar()
+                new_counter_var = make_cvar()
                 new_child = OpTreeNode( Count(new_counter_var), oj_tree.left_child )
                 oj_tree.left_child = new_child
 
@@ -393,7 +402,7 @@ def rewrite(plan,visible_vars):
 
                 if source_meta[s]['type'] == 'let_outerjoin':
                     all_left_vars = oj_tree.left_child.defined_vars()
-                    new_counter_var = make_new_cvar()
+                    new_counter_var = make_cvar()
                     new_child = OpTreeNode( Count(new_counter_var), oj_tree.left_child )
                     oj_tree.left_child = new_child
 
@@ -407,7 +416,7 @@ def rewrite(plan,visible_vars):
             if isinstance(tree.op, Join) or isinstance(tree.op, LeftOuterJoin):
                 return tree
             else:
-                return next_join(tree.left_child)
+                return find_next_join(tree.left_child)
 
         join = find_next_join(last_join)
 
