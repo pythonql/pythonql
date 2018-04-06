@@ -1,16 +1,5 @@
 from pythonql.algebra.operator import operator
 
-class MakeList(operator):
-  def __init__(self,input_vars, output_var):
-    self.input_vars = input_vars
-    self.output_var = output_var
-
-  def defined_vars(self):
-    return { self.output_var }
-
-  def used_vars(self):
-    return self.input_vars
-    
 class Count(operator):
   def __init__(self,var):
     self.var = var
@@ -99,6 +88,10 @@ class LeftOuterJoin(operator):
   def used_vars(self):
     from pythonql.Ast import get_all_vars,get_ast
     return get_all_vars(self.on)
+
+  def execute(self, table, prior_locs, left_child, right_child):
+    from pythonql.Executor import processLeftOuterJoin
+    return processLeftOuterJoin(self, table, prior_locs, left_child, right_child)
 
   def __repr__(self):
     return "LeftOuterJoin(" + repr(self.on) + "," + repr(self.hints) + ")"
@@ -229,6 +222,4 @@ class WrappedSubplan(operator):
 
   def execute(self, table, prior_locs):
     res = self.database.execute(self.query, self.tuple_vars, self.vars)
-    for r in res:
-      print (r)
     return self.database.execute(self.query, self.tuple_vars, self.vars)

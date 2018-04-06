@@ -37,6 +37,10 @@ def outerjoin_sources(expr,visible_vars):
     return sources
 
 # Is this nested query and outerjoin that we want to expand?
+# We only support outerjoins via 'outer' syntax
+# Had an idea to also support list construction via let clause as
+# outerjoins, but will leave that for a new clean version of PythonQL
+
 def good_outerjoin(e,defined_vars,clause_type):
     nested_expr = None
 
@@ -46,13 +50,9 @@ def good_outerjoin(e,defined_vars,clause_type):
            return False
         nested_expr = e.args[0].args[0]
 
-    elif clause_type == 'let':
-        if not ( isinstance(e,call_e) and isinstance(e.func, name_e) and e.func.id == 'PyQuery'):
-           return False
-        nested_expr = e.args[0]
-
+    else:
+        return False
     nested_clauses = eval(print_ast(nested_expr))
-    print (nested_clauses)
     schema = {}
     select_schema = []
 
@@ -260,20 +260,21 @@ def rewrite(plan,visible_vars):
                 # add it as another outerjoin source to the plan
 
                 if not pushed:
-                    clauses = eval(print_ast(source.args[0].args[0]))
-                    (clauses,hints,on) = extract_where(clauses,visible_vars)
-                    clauses.reverse()
+                    #clauses = eval(print_ast(source.args[0].args[0]))
+                    #(clauses,hints,on) = extract_where(clauses,visible_vars)
+                    #clauses.reverse()
 
                     # Create a "broken" outerjoin without a left child, we'll
                     # fix this up when we introduce joins into the plan
 
-                    op = LeftOuterJoin(on=on, hints=hints)
-                    source_meta[source_id] = {"type":"for_outerjoin",
-                                              "clauses":clauses, 
-                                              "hints":hints,
-                                              "on":on }
-                    source_plans[source_id] = OpTreeNode(op,None,plan_from_list(clauses))
-                    source_id += 1
+                    #op = LeftOuterJoin(on=on, hints=hints)
+                    #source_meta[source_id] = {"type":"for_outerjoin",
+                    #                          "clauses":clauses, 
+                    #                          "hints":hints,
+                    #                          "on":on }
+                    #source_plans[source_id] = OpTreeNode(op,None,plan_from_list(clauses))
+                    #source_id += 1
+                    rest_clauses.append(op)
             
             # Check whether the variables used in the operator don't occur in the subplan
             elif op.used_vars().intersection(defined_vars) == set():
@@ -374,8 +375,6 @@ def rewrite(plan,visible_vars):
             
     join = None
     
-    print("SOURCE_PLANS: ",source_plans)
-    print("SOURCE META: ",source_meta)
     # Create a tree of joins if there is more than one source
     if source_id>1:
         last_join = OpTreeNode( Join(), source_plans[0],source_plans[1] )
@@ -488,6 +487,5 @@ def rewrite(plan,visible_vars):
         wrapped = src_meta['source'].wrap(subplan,project_list,visible_vars)
         subplan.replace( OpTreeNode(wrapped) )
 
-    print("res:",res)
     return res
 
