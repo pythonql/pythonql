@@ -12,6 +12,29 @@ class PQLexerToken:
     self.line_no = line_no
     self.column = column
 
+  def __getitem__(self, index):
+      return (self.type, self.value, self.line_no, self.column)[index]
+  
+  def __setitem__(self, index, value):
+      if index == 0:
+        self.type = value
+      elif index == 1:
+        self.value = value
+      elif index == 2:
+        self.line_no = value
+      elif index == 3:
+        self.column = value
+    
+  def __delitem__(self, index):
+      if index == 0:
+        self.type = None 
+      elif index == 1:
+        self.value = None
+      elif index == 2:
+        self.line_no = None 
+      elif index == 3:
+        self.column = None
+        
   def __repr__(self):
     return "(%s,%s,%d,%d)" % (self.type, self.value, self.line_no, self.column)
 
