@@ -40,7 +40,10 @@ def isTryExceptExpression(tree):
         return False
     return (tree.label == 'try_catch_expr' and len(tree.children)>1 )
 
-def isTupleConstructor(tree):
+def isTupleConstructor(tree,is_l_value):
+    if is_l_value:
+        return False
+
     if not isinstance(tree,Node):
         return False
 
@@ -123,7 +126,7 @@ def getTextList(trees):
     return " ".join([getText(t) for t in trees])
 
 def getTermsEsc(tree):
-    str = getTextList( get_all_terminals(tree) )
+    str = getTextList( get_all_terminals(tree,False) )
     str = str_encode(str)
     return '\"' + str + '\"'
 
@@ -154,7 +157,7 @@ def mk_tok(items):
 # Convert path expressions to Python
 def get_path_expression_terminals(tree):
     baseExpr = tree.children[0]
-    result = get_all_terminals(baseExpr)
+    result = get_all_terminals(baseExpr,False)
     
     path_steps = [p for p in tree.get_children('path_step') if p.children]
     path_steps.reverse()
@@ -435,21 +438,27 @@ def get_query_terminals(tree):
     return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ",", '"'+query_type+'"', ")"])
 
 # Process an arbitrary PythonQL program
-def get_all_terminals(tree):
+def get_all_terminals(tree,is_l_value):
     if not isinstance(tree,Node):
         return [tree]
     if isPathExpression(tree):
         return get_path_expression_terminals(tree)
     elif isTryExceptExpression(tree):
         return get_try_except_expression_terminals(tree)
-    elif isTupleConstructor(tree):
+    elif isTupleConstructor(tree,is_l_value):
         return get_tuple_constructor_terminals(tree)
     elif isQuery(tree):
         return get_query_terminals(tree)
     else:
         children = []
-        if tree.children:
-            children = reduce( lambda x,y: x+y, [get_all_terminals(c) for c in tree.children])
+
+        if tree.label == 'expr_stmt':
+            child_0 = get_all_terminals(tree.children[0],True)
+            rest = [get_all_terminals(c,False) for c in tree.children[1:]]
+            return child_0 + reduce(lambda x,y: x+y, rest)
+
+        elif tree.children:
+            children = reduce( lambda x,y: x+y, [get_all_terminals(c,is_l_value) for c in tree.children])
         return children
 
 # Generate a program from a parse tree
@@ -459,5 +468,5 @@ def makeProgramFromFile(fname):
 
 def makeProgramFromString(str):
   tree = parsePythonQL(str)
-  all_terminals = get_all_terminals(tree)
+  all_terminals = get_all_terminals(tree,False)
   return print_program(all_terminals)
