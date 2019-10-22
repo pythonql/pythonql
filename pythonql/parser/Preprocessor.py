@@ -125,8 +125,8 @@ def getText(tree):
 def getTextList(trees):
     return " ".join([getText(t) for t in trees])
 
-def getTermsEsc(tree):
-    str = getTextList( get_all_terminals(tree,False) )
+def getTermsEsc(tree,insideQuery):
+    str = getTextList( get_all_terminals(tree,False,insideQuery) )
     str = str_encode(str)
     return '\"' + str + '\"'
 
@@ -155,15 +155,15 @@ def mk_tok(items):
         return [PQLexerToken('PQL',items,-1,-1)]
 
 # Convert path expressions to Python
-def get_path_expression_terminals(tree):
+def get_path_expression_terminals(tree,insideQuery):
     baseExpr = tree.children[0]
-    result = get_all_terminals(baseExpr,False)
+    result = get_all_terminals(baseExpr,False,insideQuery)
     
     path_steps = [p for p in tree.get_children('path_step') if p.children]
     path_steps.reverse()
 
     for p in path_steps:
-      cond = mk_tok([ getTermsEsc(p.children[2]) ])
+      cond = mk_tok([ getTermsEsc(p.children[2],insideQuery) ])
       if isChildStep(p):
         result = mk_tok([ "PQChildPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
       else:
@@ -172,13 +172,13 @@ def get_path_expression_terminals(tree):
     return result
 
 # Convert try-catch expression to Python
-def get_try_except_expression_terminals(tree):
+def get_try_except_expression_terminals(tree,insideQuery):
     children = tree.children
     try_expr = children[1]
     except_expr = children[3]
  
-    result = mk_tok(["PQTry", "(", getTermsEsc(try_expr), ",",
-               getTermsEsc(except_expr), ",","locals()",")"])
+    result = mk_tok(["PQTry", "(", getTermsEsc(try_expr,insideQuery), ",",
+               getTermsEsc(except_expr,insideQuery), ",","locals()",")"])
     return result
 
 # Convert the tuple constructor
@@ -186,11 +186,11 @@ def get_tuple_constructor_terminals(tree):
     elements = [x for x in tree.children[0].children if isinstance(x,Node)]
     res = []
     for e in elements:
-      value = mk_tok([getTermsEsc(e.children[0])])
+      value = mk_tok([getTermsEsc(e.children[0],True)])
       if len(e.children)==1:
         res.append(mk_tok(["(",value,",","None",")"]))
       else:
-        alias = mk_tok([getTermsEsc(e.children[2])])
+        alias = mk_tok([getTermsEsc(e.children[2],True)])
         res.append(mk_tok(["(",value,",",alias,")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
     return mk_tok(["make_pql_tuple","(", "[",res,"]",",","locals","(",")",")"])
@@ -205,7 +205,7 @@ def process_select_clause(tree):
       if not isinstance(tree.children[0], Node):
         e = tree.children[1]
 
-      value_toks = mk_tok([getTermsEsc(e)])
+      value_toks = mk_tok([getTermsEsc(e,True)])
       return mk_tok(["Select(", value_toks, ")"])
 
     # Map select clause
@@ -216,8 +216,8 @@ def process_select_clause(tree):
         k = tree.children[1]
         e = tree.children[3]
 
-      key_toks = mk_tok([getTermsEsc(k)])
-      value_toks = mk_tok([getTermsEsc(e)])
+      key_toks = mk_tok([getTermsEsc(k,True)])
+      value_toks = mk_tok([getTermsEsc(e,True)])
       return mk_tok(["Select(", value_toks, ",", key_toks, ")" ])
 
 # Process the for clause
@@ -228,7 +228,7 @@ def process_for_clause(tree):
         vars = [mk_tok(['"%s"' % t.value]) for t in cl.children[0].terms() if t.type == 'NAME']
         vars = mk_tok([ "[", reduce(lambda x,y: x + mk_tok([","]) + y, vars), "]" ])
         unpack_expr = '"' + " ".join([t.value for t in cl.children[0].terms()]) + '"'
-        expression = getTermsEsc(cl.children[2])
+        expression = getTermsEsc(cl.children[2],True)
         clause_tokens =  mk_tok(["For(", vars, ",", unpack_expr, ",", expression,")"]) 
         res.append(clause_tokens)
     return res
@@ -241,7 +241,7 @@ def process_let_clause(tree):
         vars = [mk_tok(['"%s"' % t.value]) for t in cl.children[0].terms() if t.type == 'NAME']
         vars = mk_tok([ "[", reduce(lambda x,y: x + mk_tok([","]) + y, vars), "]" ])
         unpack_expr = '"' + " ".join([t.value for t in cl.children[0].terms()]) + '"'
-        expression = getTermsEsc(cl.children[2])
+        expression = getTermsEsc(cl.children[2],True)
         clause_tokens =  mk_tok(["Let(", vars, ",", unpack_expr, ",", expression,")"]) 
         res.append(clause_tokens)
     return res
@@ -255,7 +255,7 @@ def process_match_clause(tree):
       pass
     vars = []
     pattern = process_pattern(tree.children[2], vars)
-    expression = getTermsEsc(tree.children[4])
+    expression = getTermsEsc(tree.children[4],True)
     vars = [mk_tok(['"' + v + '"']) for v in vars]
     vars = mk_tok([ "[", reduce(lambda x,y: x + mk_tok([","]) + y, vars), "]" ])
     res = mk_tok(["Match(", repr(exact) , ",",  vars, ",", json.dumps(pattern), ",", expression, ")"])
@@ -311,7 +311,7 @@ def process_orderby_clause(tree):
     for e in elements:
         ascdesc = "asc" if len(e.children)==1 else getText(e.children[1])
         ascdesc = '"'+ascdesc+'"'
-        res.append(mk_tok(["(", getTermsEsc(e.children[0]),",", ascdesc, ")"]))
+        res.append(mk_tok(["(", getTermsEsc(e.children[0],True),",", ascdesc, ")"]))
     res = reduce(lambda x,y: x + mk_tok([","]) + y, res)
     return mk_tok(["OrderBy(", "[", res, "]", ")"])
 
@@ -323,7 +323,7 @@ def process_groupby_clause(tree):
         if len(e.children)==1 and tokType(e.children[0],'NAME'):
           res.append(mk_tok(['"'+getText(e)+'"']))
         else:
-          gby_expr = getTermsEsc(e.children[0])
+          gby_expr = getTermsEsc(e.children[0],True)
           alias = gby_expr
           if len(e.children)==3:
              alias = '"'+getText(e.children[2])+'"'
@@ -337,7 +337,7 @@ def process_count_clause(tree):
 
 # Process the where clause (this is easy)
 def process_where_clause(tree):
-    return mk_tok(["Where(", getTermsEsc(tree.children[1]),")"])
+    return mk_tok(["Where(", getTermsEsc(tree.children[1],True),")"])
 
 # Process the window clause (hairy stuff)
 def get_window_vars(tree,type):
@@ -357,13 +357,13 @@ def process_window_clause(tree):
   window = tree.children[0]
   tumbling = window.label == 'tumbling_window'
   window_var = getText(window.children[3])
-  binding_seq = getTermsEsc(window.children[5])
+  binding_seq = getTermsEsc(window.children[5],True)
 
   start = window.get_child('window_start_cond')
   end = window.get_child_opt('window_end_cond')
 
   start_vars = get_window_vars(start.children[1],"s")
-  start_cond = getTermsEsc(start.children[3])
+  start_cond = getTermsEsc(start.children[3],True)
   end_vars = {}
   end_cond = None
   only = False
@@ -371,11 +371,11 @@ def process_window_clause(tree):
   if end:
     if len(end.children) == 5:
       end_vars = get_window_vars(end.children[2],"e")
-      end_cond = getTermsEsc(end.children[4])
+      end_cond = getTermsEsc(end.children[4],True)
       only = True
     else:
       end_vars = get_window_vars(end.children[1],"e")
-      end_cond = getTermsEsc(end.children[3])
+      end_cond = getTermsEsc(end.children[3],True)
 
   start_vars.update( end_vars )
   var_tokens = [mk_tok([ '"'+k+'"', ":", '"'+start_vars[k]+'"' ]) for k in start_vars ]
@@ -438,14 +438,14 @@ def get_query_terminals(tree):
     return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ",", '"'+query_type+'"', ")"])
 
 # Process an arbitrary PythonQL program
-def get_all_terminals(tree,is_l_value):
+def get_all_terminals(tree,is_l_value,insideQuery):
     if not isinstance(tree,Node):
         return [tree]
     if isPathExpression(tree):
-        return get_path_expression_terminals(tree)
+        return get_path_expression_terminals(tree,insideQuery)
     elif isTryExceptExpression(tree):
-        return get_try_except_expression_terminals(tree)
-    elif isTupleConstructor(tree,is_l_value):
+        return get_try_except_expression_terminals(tree,insideQuery)
+    elif isTupleConstructor(tree,is_l_value) and insideQuery==True:
         return get_tuple_constructor_terminals(tree)
     elif isQuery(tree):
         return get_query_terminals(tree)
@@ -453,12 +453,12 @@ def get_all_terminals(tree,is_l_value):
         children = []
 
         if tree.label == 'expr_stmt':
-            child_0 = get_all_terminals(tree.children[0],True)
-            rest = [get_all_terminals(c,False) for c in tree.children[1:]]
+            child_0 = get_all_terminals(tree.children[0],True,insideQuery)
+            rest = [get_all_terminals(c,False,insideQuery) for c in tree.children[1:]]
             return child_0 + reduce(lambda x,y: x+y, rest)
 
         elif tree.children:
-            children = reduce( lambda x,y: x+y, [get_all_terminals(c,is_l_value) for c in tree.children])
+            children = reduce( lambda x,y: x+y, [get_all_terminals(c,is_l_value,insideQuery) for c in tree.children])
         return children
 
 # Generate a program from a parse tree
@@ -468,5 +468,5 @@ def makeProgramFromFile(fname):
 
 def makeProgramFromString(str):
   tree = parsePythonQL(str)
-  all_terminals = get_all_terminals(tree,False)
+  all_terminals = get_all_terminals(tree,False,False)
   return print_program(all_terminals)

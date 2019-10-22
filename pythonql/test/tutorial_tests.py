@@ -1,7 +1,7 @@
 #coding: pythonql
 
 def q1_test():
-  res = [ (x,y)
+  res = [ select (x,y)
             for x in range(1,8)
             for y in range(1,7)
             if x % 2 == 0 and
