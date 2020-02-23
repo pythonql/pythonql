@@ -10,9 +10,9 @@ class Count(operator):
   def used_vars(self):
     return set()
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processCountClause
-    return processCountClause(self, table, prior_locs)
+    return processCountClause(self, table, prior_locs, prior_globs)
 
 class For(operator):
   def __init__(self,vars,unpack,expr):
@@ -28,9 +28,9 @@ class For(operator):
     from pythonql.Ast import get_all_vars,get_ast
     return get_all_vars(get_ast(self.expr))
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processForClause
-    return processForClause(self, table, prior_locs)
+    return processForClause(self, table, prior_locs, prior_globs)
 
   def __repr__(self):
     return "For (" + repr(self.vars) + "," + repr(self.unpack) + "," + self.expr + ")"
@@ -50,9 +50,9 @@ class GroupBy(operator):
 
     return vs
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processGroupByClause
-    return processGroupByClause(self, table, prior_locs)
+    return processGroupByClause(self, table, prior_locs, prior_globs)
 
   def __repr__(self):
     return "GroupBy ( " + repr(self.groupby_list) + ")"
@@ -73,9 +73,9 @@ class Join(operator):
 
     return vs
 
-  def execute(self, table, prior_locs, left_child, right_child):
+  def execute(self, table, prior_locs, prior_globs, left_child, right_child):
     from pythonql.Executor import processJoin
-    return processJoin(self, table, prior_locs, left_child, right_child)
+    return processJoin(self, table, prior_locs, prior_globs, left_child, right_child)
 
   def __repr__(self):
     return "Join(" + repr(self.left_conds) + "," + repr(self.right_conds) + ")"
@@ -89,9 +89,9 @@ class LeftOuterJoin(operator):
     from pythonql.Ast import get_all_vars,get_ast
     return get_all_vars(self.on)
 
-  def execute(self, table, prior_locs, left_child, right_child):
+  def execute(self, table, prior_locs, prior_globs, left_child, right_child):
     from pythonql.Executor import processLeftOuterJoin
-    return processLeftOuterJoin(self, table, prior_locs, left_child, right_child)
+    return processLeftOuterJoin(self, table, prior_locs, prior_globs, left_child, right_child)
 
   def __repr__(self):
     return "LeftOuterJoin(" + repr(self.on) + "," + repr(self.hints) + ")"
@@ -109,9 +109,9 @@ class Let(operator):
     from pythonql.Ast import get_all_vars,get_ast
     return get_all_vars(get_ast(self.expr))
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processLetClause
-    return processLetClause(self, table, prior_locs)
+    return processLetClause(self, table, prior_locs, prior_globs)
 
   def __repr__(self):
     return "Let (" + repr(self.vars) + "," + repr(self.unpack) + "," + self.expr + ")"
@@ -126,9 +126,9 @@ class Match(operator):
   def defined_vars(self):
     return set( self.vars )
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processMatchClause
-    return processMatchClause(self, table, prior_locs)
+    return processMatchClause(self, table, prior_locs, prior_globs)
 
 class OrderBy(operator):
   def __init__(self,orderby_list):
@@ -142,9 +142,9 @@ class OrderBy(operator):
 
     return vs
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processOrderByClause
-    return processOrderByClause(self, table, prior_locs)
+    return processOrderByClause(self, table, prior_locs, prior_globs)
 
 class Select(operator):
   def __init__(self, expr, second_expr=None):
@@ -164,9 +164,9 @@ class Select(operator):
         return get_all_vars(get_ast(self.key_expr)).union(
             get_all_vars(get_ast(self.value_expr)))
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processSelectClause
-    return processSelectClause(self, table, prior_locs)
+    return processSelectClause(self, table, prior_locs, prior_globs)
 
   def __repr__(self):
     if self.expr:
@@ -182,9 +182,9 @@ class Where(operator):
     from pythonql.Ast import get_all_vars,get_ast
     return get_all_vars(get_ast(self.expr))
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processWhereClause
-    return processWhereClause(self, table, prior_locs)
+    return processWhereClause(self, table, prior_locs, prior_globs)
 
   def __repr__(self):
     return "Where (" + self.expr + ")"
@@ -206,9 +206,9 @@ class Window(operator):
     from pythonql.Ast import get_all_vars,get_ast
     return get_all_vars( get_ast( expr.binding_seq ))
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     from pythonql.Executor import processWindowClause
-    return processWindowClause(self, table, prior_locs)
+    return processWindowClause(self, table, prior_locs, prior_globs)
 
 class WrappedSubplan(operator):
   def __init__(self,database,query,tuple_vars,vars):
@@ -220,6 +220,6 @@ class WrappedSubplan(operator):
   def __repr__(self):
     return "Wrapped(" + self.query + "," + repr([x['tuple_var'] for x in self.tuple_vars]) + "," + repr(self.vars) + ")"
 
-  def execute(self, table, prior_locs):
+  def execute(self, table, prior_locs, prior_globs):
     res = self.database.execute(self.query, self.tuple_vars, self.vars)
     return self.database.execute(self.query, self.tuple_vars, self.vars)

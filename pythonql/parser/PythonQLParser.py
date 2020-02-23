@@ -466,14 +466,8 @@ class Parser:
     p[0] = make_list('stmt_list', p)
 
   def p_test(self, p):
-    """test : try_catch_expr path_step"""
+    """test : try_catch_expr"""
     p[0] = make_node('test', p)
-
-  def p_path_step(self, p):
-    """path_step : path_step CHILD_AXIS try_catch_expr
-                      | path_step DESCENDENT_AXIS try_catch_expr
-                      | """
-    p[0] = make_node('path_step', p)
 
   def p_try_catch_expr(self, p):
     """try_catch_expr : old_test
@@ -573,8 +567,14 @@ class Parser:
 
   def p_not_in_expr(self, p):
     """not_in_expr : not_in_expr NOT IN not_in_expr
-                   | star_expr"""
+                   | path_step"""
     p[0] = make_node('not_in_expr', p)
+
+  def p_path_step(self, p):
+    """path_step : path_step CHILD_AXIS star_expr
+                      | path_step DESCENDENT_AXIS star_expr
+                      | star_expr"""
+    p[0] = make_node('path_step', p)
 
   def p_star_expr(self, p):
     """star_expr : '*' expr

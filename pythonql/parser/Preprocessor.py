@@ -33,7 +33,7 @@ def parsePythonQL( s ):
 def isPathExpression(tree):
     if not isinstance(tree,Node):
         return False
-    return (tree.label == 'test' and tree.children[1].children)
+    return (tree.label == 'path_step' and len(tree.children)>1)
 
 def isTryExceptExpression(tree):
     if not isinstance(tree,Node):
@@ -159,12 +159,12 @@ def get_path_expression_terminals(tree,insideQuery):
     baseExpr = tree.children[0]
     result = get_all_terminals(baseExpr,False,insideQuery)
     
-    path_steps = [p for p in tree.get_children('path_step') if p.children]
-    path_steps.reverse()
+    if len(tree.children)==1:
+        return result
 
-    for p in path_steps:
-      cond = mk_tok([ getTermsEsc(p.children[2],insideQuery) ])
-      if isChildStep(p):
+    else:
+      cond = mk_tok([ getTermsEsc(tree.children[2],insideQuery) ])
+      if isChildStep(tree):
         result = mk_tok([ "PQChildPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
       else:
         result = mk_tok([ "PQDescPath", "(", result, ",", cond, ",", "locals", "(", ")", ")" ])
@@ -435,7 +435,7 @@ def get_query_terminals(tree):
     clauses.append( select_clause )
 
     clauses_repr = reduce( lambda x,y: x + mk_tok([","]) + y, clauses)
-    return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ",", '"'+query_type+'"', ")"])
+    return mk_tok(["PyQuery", "(", "[", clauses_repr, "]", ",", "locals", "(", ")", ",", "globals","(",")",",",'"'+query_type+'"', ")"])
 
 # Process an arbitrary PythonQL program
 def get_all_terminals(tree,is_l_value,insideQuery):

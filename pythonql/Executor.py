@@ -116,7 +116,7 @@ def emptyTuple(schema):
   return PQTuple([None] * len(schema), schema)
 
 # Execute the query
-def PyQuery( clauses, prior_locs, returnType ):
+def PyQuery( clauses, prior_locs, prior_globs, returnType ):
   data = []
   data.append( emptyTuple([]) )
 
@@ -128,7 +128,7 @@ def PyQuery( clauses, prior_locs, returnType ):
 
   if Debug().print_optimized:
       print("Rewritten query:",plan)
-  data = plan.execute(data, prior_locs)
+  data = plan.execute(data, prior_locs, prior_globs)
   if returnType == "gen":
     return data
   elif returnType == "list":
@@ -140,7 +140,7 @@ def PyQuery( clauses, prior_locs, returnType ):
 
 # Process Select clause
 # We still keep that feature of generating tuples for now
-def processSelectClause(c, table, prior_lcs):
+def processSelectClause(c, table, prior_lcs, prior_globs):
   # If this is a list/set comprehension:
   if c.expr:
     # Compile the expression:
@@ -148,7 +148,7 @@ def processSelectClause(c, table, prior_lcs):
     for t in table:
       lcs = prior_lcs
       lcs.update(t.getDict())
-      yield eval(e,globals(),lcs)
+      yield eval(e,prior_globs,lcs)
 
   else:
     k_expr = compile(c.key_expr.lstrip(),'<string>','eval')
@@ -156,13 +156,13 @@ def processSelectClause(c, table, prior_lcs):
     for t in table:
       lcs = prior_lcs
       lcs.update(t.getDict())
-      k = eval(k_expr,globals(),lcs)
-      v = eval(v_expr,globals(),lcs)
+      k = eval(k_expr,prior_globs,lcs)
+      v = eval(v_expr,prior_globs,lcs)
       yield (k,v)
 
 # Process the for clause. This clause creates a cartesian
 # product of the input table with new sequence
-def processForClause(c, table, prior_lcs):
+def processForClause(c, table, prior_lcs, prior_globs):
   new_schema = None
   comp_expr = compile(c.expr.lstrip(), "<string>", "eval")
 
@@ -174,7 +174,7 @@ def processForClause(c, table, prior_lcs):
 
     lcs = prior_lcs
     lcs.update(t.getDict())
-    vals = eval(comp_expr, globals(), lcs)
+    vals = eval(comp_expr, prior_globs, lcs)
     if len(c.vars) == 1:
       for v in vals:
         new_t_data = list(t.tuple)
@@ -186,7 +186,7 @@ def processForClause(c, table, prior_lcs):
       for v in vals:
         unpack_expr = "[ %s for %s in [ __v ]]" % (
                       '(' + ",".join(c.vars) + ')', c.unpack)
-        unpacked_vals = eval(unpack_expr, globals(), {'__v':v})
+        unpacked_vals = eval(unpack_expr, prior_globs, {'__v':v})
         new_t_data = list(t.tuple)
         for tv in unpacked_vals[0]:
           new_t_data.append(tv)
@@ -195,7 +195,7 @@ def processForClause(c, table, prior_lcs):
 
 # Process the let clause. Here we just add a variable to each
 # input tuple
-def processLetClause(c, table, prior_lcs):
+def processLetClause(c, table, prior_lcs, prior_globs):
   comp_expr = compile(c.expr.lstrip(), "<string>", "eval")
   new_schema = None
   for t in table:
@@ -207,7 +207,7 @@ def processLetClause(c, table, prior_lcs):
 
     lcs = prior_lcs
     lcs.update(t.getDict())
-    v = eval(comp_expr, globals(), lcs)
+    v = eval(comp_expr, prior_globs, lcs)
     if len(c.vars) == 1:
       t.tuple.append(v)
       new_t = PQTuple( t.tuple, new_schema )
@@ -216,7 +216,7 @@ def processLetClause(c, table, prior_lcs):
     else:
       unpack_expr = "[ %s for %s in [ __v ]]" % (
                       '(' + ",".join(c.vars) + ')', c.unpack) 
-      unpacked_vals = eval(unpack_expr, globals(), {'__v':v})
+      unpacked_vals = eval(unpack_expr, prior_globs, {'__v':v})
       new_t_data = list(t.tuple)
       for tv in unpacked_vals[0]:
         new_t_data.append(tv)
@@ -224,7 +224,7 @@ def processLetClause(c, table, prior_lcs):
       yield new_t
 
 # Process a join
-def processJoin(c, table, prior_lcs, left_arg, right_arg):
+def processJoin(c, table, prior_lcs, prior_globs, left_arg, right_arg):
   new_schema = None
   left_conds = c.left_conds
   right_conds = c.right_conds
@@ -254,7 +254,7 @@ def processJoin(c, table, prior_lcs, left_arg, right_arg):
         for rcond in right_conds:
             lcs = prior_lcs
             lcs.update(t.getDict())
-            rcond_val = eval(rcond, globals(), lcs)
+            rcond_val = eval(rcond, prior_globs, lcs)
             index_tuple.append( rcond_val )
         index_tuple = tuple(index_tuple)
         if not index_tuple in index:
@@ -264,13 +264,13 @@ def processJoin(c, table, prior_lcs, left_arg, right_arg):
   # Iterate over the tuples of the left relation and
   # compute the tuple of condition vars
 
-  table = left_arg.execute(table, prior_lcs)
+  table = left_arg.execute(table, prior_lcs, prior_globs)
   for t in table:
      cond_tuple = []
      for lcond in left_conds:
          lcs = prior_lcs
          lcs.update(t.getDict())
-         lcond_val = eval(lcond, globals(), lcs)
+         lcond_val = eval(lcond, prior_globs, lcs)
          cond_tuple.append( lcond_val )
      cond_tuple = tuple(cond_tuple)
 
@@ -290,14 +290,14 @@ def processJoin(c, table, prior_lcs, left_arg, right_arg):
              continue
      else:
           r_data = r_init_data
-          r_data = right_arg.execute(r_data, prior_lcs)
+          r_data = right_arg.execute(r_data, prior_lcs, prior_globs)
 
           for t2 in r_data:
               rcond_tuple = []
               for rcond in right_conds:
                   lcs = prior_lcs
                   lcs.update(t2.getDict())
-                  rcond_val = eval(rcond, globals(), lcs)
+                  rcond_val = eval(rcond, prior_globs, lcs)
                   rcond_tuple.append( rcond_val )
 
               rcond_tuple = tuple(rcond_tuple)
@@ -313,7 +313,7 @@ def processJoin(c, table, prior_lcs, left_arg, right_arg):
                  yield new_t
 
 # Process the match claise
-def processMatchClause(c, table, prior_lcs):
+def processMatchClause(c, table, prior_lcs, prior_globs):
   clause_expr = compile(c.expr, "<string>", "eval")
 
   # Fetch and compile all expressions in the
@@ -339,7 +339,7 @@ def processMatchClause(c, table, prior_lcs):
 
     lcs = prior_lcs
     lcs.update(t.getDict())
-    vals = eval(clause_expr, globals(), lcs)
+    vals = eval(clause_expr, prior_globs, lcs)
 
     for v in vals:
       if not hasattr(v, '__contains__'):
@@ -348,10 +348,10 @@ def processMatchClause(c, table, prior_lcs):
       new_t_data = list(t.tuple) + [None]*len(c.vars)
       new_t = PQTuple(new_t_data, new_schema)
 
-      if match_pattern(c.pattern, c.exact, v, new_t, lcs):
+      if match_pattern(c.pattern, c.exact, v, new_t, lcs, prior_globs):
         yield new_t
 
-def match_pattern(ps, isExact, v, new_t, lcs):
+def match_pattern(ps, isExact, v, new_t, lcs, prior_globs):
   all_heads = []
   for p in [x for x in ps if 'match' in x]:
     match = p['match'][1:-1]
@@ -369,12 +369,12 @@ def match_pattern(ps, isExact, v, new_t, lcs):
       lcs.update({p['bind_to']:v[match]})
 
     if 'expr_cond' in p:
-      val = eval(p['expr_cond'], globals(), lcs)
+      val = eval(p['expr_cond'], prior_globs, lcs)
       if not val:
         return False
       
     if 'pattern' in p:
-      if not match_pattern(p['pattern'], isExact, v[match], new_t, lcs):
+      if not match_pattern(p['pattern'], isExact, v[match], new_t, lcs, prior_globs):
         return False
 
   if isExact and any([x for x in v if x not in all_heads]):
@@ -388,7 +388,7 @@ def match_pattern(ps, isExact, v, new_t, lcs):
   return True
   
 # Process the count clause. Similar to let, but simpler
-def processCountClause(c, table, prior_lcs):
+def processCountClause(c, table, prior_lcs, prior_globs):
   new_schema = None
   for (i,t) in enumerate(table):
 
@@ -400,7 +400,7 @@ def processCountClause(c, table, prior_lcs):
     yield new_t
 
 # Process the group-by
-def processGroupByClause(c, table, prior_lcs):
+def processGroupByClause(c, table, prior_lcs, prior_globs):
   gby_aliases = [g if isinstance(g,str) else g[1]
                                 for g in c.groupby_list]
   gby_exprs = [g if isinstance(g,str) else g[0]
@@ -418,7 +418,7 @@ def processGroupByClause(c, table, prior_lcs):
     lcs = prior_lcs
     lcs.update(t.getDict())
     # Compute the key
-    k = tuple( [eval(e,globals(),lcs) for e in comp_exprs] )
+    k = tuple( [eval(e,prior_globs,lcs) for e in comp_exprs] )
     if not k in grp_table:
       grp_table[k] = []
     grp_table[k].append(t)
@@ -451,17 +451,17 @@ def processGroupByClause(c, table, prior_lcs):
 
 
 # Process where clause
-def processWhereClause(c, table, prior_lcs):
+def processWhereClause(c, table, prior_lcs, prior_globs):
   comp_expr = compile(c.expr.lstrip(),"<string>","eval")
   for t in table:
     lcs = prior_lcs
     lcs.update(t.getDict())
-    val = eval(comp_expr, globals(), lcs)
+    val = eval(comp_expr, prior_globs, lcs)
     if val:
       yield t
 
 # Process the orderby clause
-def processOrderByClause(c, table, prior_lcs):
+def processOrderByClause(c, table, prior_lcs, prior_globs):
   # Here we do n sorts, n is the number of sort specifications
   # For each sort we first need to compute a sort value (could
   # be some expression)
@@ -472,7 +472,7 @@ def processOrderByClause(c, table, prior_lcs):
   def computeSortSpec(tup,sort_spec):
     lcs = prior_lcs
     lcs.update(tup.getDict())
-    return eval(sort_spec, globals(), lcs)
+    return eval(sort_spec, prior_globs, lcs)
 
   sort_exprs.reverse()
   sort_rev.reverse()
@@ -518,7 +518,7 @@ def fill_in_end_vars(vars, binding_seq, i ):
 # start a new window at this location (without considering tumbling
 # windows, that check is done elsewhere).
 
-def check_start_condition(all_vars,clause,locals,var_mapping):
+def check_start_condition(all_vars,clause,locals,prior_globs,var_mapping):
   # we just need to evaluate the when expression 
   # but we need to set up the vars correctly, respecting the visibility
   # conditions
@@ -530,11 +530,11 @@ def check_start_condition(all_vars,clause,locals,var_mapping):
   locals.update( start_bindings )
 
   #evaluate the when condition
-  return eval( clause.s_when, globals(), locals )
+  return eval( clause.s_when, prior_globs, locals )
   
 # Check the end condition of the window.
 
-def check_end_condition(vars,clause,locals,var_mapping):
+def check_end_condition(vars,clause,locals,prior_globs,var_mapping):
   # If there is no 'when' clause, return False
   if not clause.e_when:
     return False
@@ -543,12 +543,12 @@ def check_end_condition(vars,clause,locals,var_mapping):
   end_binding = { var_mapping[v] : vars[v] for v in end_vars }
 
   locals.update( end_binding )
-  res = eval( clause.e_when, globals(), locals)
+  res = eval( clause.e_when, prior_globs, locals)
 
   return res
 
 # Process window clause
-def processWindowClause(c, table, prior_lcs):
+def processWindowClause(c, table, prior_lcs, prior_globs):
   schema = None
   new_schema = None
 
@@ -568,7 +568,7 @@ def processWindowClause(c, table, prior_lcs):
     lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     # Evaluate the binding sequence
-    binding_seq = list(eval(c.binding_seq, globals(), lcs))
+    binding_seq = list(eval(c.binding_seq, prior_globs, lcs))
 
     # Create initial window variables
 
@@ -584,7 +584,7 @@ def processWindowClause(c, table, prior_lcs):
       if not c.tumbling or (c.tumbling and not open_windows):
         vars = make_window_vars()
         fill_in_start_vars(vars,binding_seq,i)
-        if check_start_condition(vars,c,dict(lcs),var_mapping):
+        if check_start_condition(vars,c,dict(lcs),prior_globs,var_mapping):
           open_windows.append( {"window":[], "vars":vars} )
       
       new_open_windows = []
@@ -595,7 +595,7 @@ def processWindowClause(c, table, prior_lcs):
 
         fill_in_end_vars(w["vars"],binding_seq,i)
 
-        if check_end_condition(w["vars"],c,dict(lcs),var_mapping):
+        if check_end_condition(w["vars"],c,dict(lcs),prior_globs,var_mapping):
           closed_windows.append(w)
         else:
           new_open_windows.append(w)

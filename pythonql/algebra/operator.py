@@ -74,16 +74,17 @@ class OpTreeNode:
     self.right_child = other.right_child
 
   # Execute this subtree
-  def execute(self, table, prior_lcs):
+  def execute(self, table, prior_lcs, prior_globs):
     if self.right_child:
         return self.op.execute(table,
                                prior_lcs,
+                               prior_globs,
                                self.left_child,
                                self.right_child)
     else:
         if self.left_child:
-            table = self.left_child.execute(table, prior_lcs)
-        return self.op.execute(table, prior_lcs)
+            table = self.left_child.execute(table, prior_lcs, prior_globs)
+        return self.op.execute(table, prior_lcs, prior_globs)
 
 
   # return a string representation of the plan

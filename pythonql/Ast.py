@@ -296,7 +296,7 @@ def get_all_var_mappings(a):
 
             else:        
                 vs = {}
-                for nested_vs in [get_all_var_mappins(y) for y in x]:
+                for nested_vs in [get_all_var_mappings(y) for y in a.args]:
                     vs.update( nested_vs )
 
                 return vs
