@@ -43,23 +43,50 @@ class PQTuple:
   def copy(self):
     return PQTuple(list(self.tuple), self.schema)
 
+  def __lt__(self,other):
+    if isinstance(other, self.__class__):
+      if self.schema == other.schema:
+        return self.tuple < other.tuple
+      else:
+        return False
+    elif isinstance(other, tuple):
+      return self.tuple < other
+    else:
+      return False
+
   def __eq__(self,other):
     if isinstance(other, self.__class__):
       if self.schema == other.schema:
         return self.tuple == other.tuple
       else:
         return False
+    elif isinstance(other, tuple):
+      return self.tuple == other
     else:
       return False
+
+  def __gt__(self,other):
+    if isinstance(other, self.__class__):
+      if self.schema == other.schema:
+        return self.tuple > other.tuple
+      else:
+        return False
+    elif isinstance(other, tuple):
+      return self.tuple > other
+    else:
+      return False
+
+  def __le__(self,other):
+    return self.__gt__(other) or self.__eq__(other)
+
+  def __ge__(self,other):
+    return self.__gt__(other) or self.__eq__(other)
 
   def __ne__(self,other):
     return not self.__eq__(other)
 
   def __hash__(self):
-    res = 0
-    for item in self.tuple:
-      res += hash(item)
-    return res
+    return hash(self.tuple)
 
   def __repr__(self):
     #print(self.schema)
