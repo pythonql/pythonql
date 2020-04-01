@@ -146,7 +146,7 @@ def processSelectClause(c, table, prior_lcs, prior_globs):
     # Compile the expression:
     e = compile(c.expr.lstrip(), '<string>','eval')
     for t in table:
-      lcs = prior_lcs
+      lcs = dict(prior_lcs)
       lcs.update(t.getDict())
       yield eval(e,prior_globs,lcs)
 
@@ -164,6 +164,7 @@ def processSelectClause(c, table, prior_lcs, prior_globs):
 # product of the input table with new sequence
 def processForClause(c, table, prior_lcs, prior_globs):
   new_schema = None
+  print(c.expr)
   comp_expr = compile(c.expr.lstrip(), "<string>", "eval")
 
   for t in table:
@@ -172,7 +173,7 @@ def processForClause(c, table, prior_lcs, prior_globs):
       for (i,v) in enumerate(c.vars):
         new_schema[v] = len(t.schema) + i
 
-    lcs = prior_lcs
+    lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     vals = eval(comp_expr, prior_globs, lcs)
     if len(c.vars) == 1:
@@ -205,7 +206,7 @@ def processLetClause(c, table, prior_lcs, prior_globs):
       for (i,v) in enumerate(c.vars):
         new_schema[v] = len(t.schema) + i
 
-    lcs = prior_lcs
+    lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     v = eval(comp_expr, prior_globs, lcs)
     if len(c.vars) == 1:
@@ -252,7 +253,7 @@ def processJoin(c, table, prior_lcs, prior_globs, left_arg, right_arg):
     for t in r_data:
         index_tuple = [] 
         for rcond in right_conds:
-            lcs = prior_lcs
+            lcs = dict(prior_lcs)
             lcs.update(t.getDict())
             rcond_val = eval(rcond, prior_globs, lcs)
             index_tuple.append( rcond_val )
@@ -268,7 +269,7 @@ def processJoin(c, table, prior_lcs, prior_globs, left_arg, right_arg):
   for t in table:
      cond_tuple = []
      for lcond in left_conds:
-         lcs = prior_lcs
+         lcs = dict(prior_lcs)
          lcs.update(t.getDict())
          lcond_val = eval(lcond, prior_globs, lcs)
          cond_tuple.append( lcond_val )
@@ -295,7 +296,7 @@ def processJoin(c, table, prior_lcs, prior_globs, left_arg, right_arg):
           for t2 in r_data:
               rcond_tuple = []
               for rcond in right_conds:
-                  lcs = prior_lcs
+                  lcs = dict(prior_lcs)
                   lcs.update(t2.getDict())
                   rcond_val = eval(rcond, prior_globs, lcs)
                   rcond_tuple.append( rcond_val )
@@ -337,7 +338,7 @@ def processMatchClause(c, table, prior_lcs, prior_globs):
       for (i,v) in enumerate(c.vars):
         new_schema[v] = len(t.schema) + i
 
-    lcs = prior_lcs
+    lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     vals = eval(clause_expr, prior_globs, lcs)
 
@@ -415,7 +416,7 @@ def processGroupByClause(c, table, prior_lcs, prior_globs):
     if not schema:
       schema = t.schema
 
-    lcs = prior_lcs
+    lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     # Compute the key
     k = tuple( [eval(e,prior_globs,lcs) for e in comp_exprs] )
@@ -454,7 +455,7 @@ def processGroupByClause(c, table, prior_lcs, prior_globs):
 def processWhereClause(c, table, prior_lcs, prior_globs):
   comp_expr = compile(c.expr.lstrip(),"<string>","eval")
   for t in table:
-    lcs = prior_lcs
+    lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     val = eval(comp_expr, prior_globs, lcs)
     if val:
@@ -470,7 +471,7 @@ def processOrderByClause(c, table, prior_lcs, prior_globs):
   sort_rev = [ o[1]=='desc' for o in c.orderby_list]
 
   def computeSortSpec(tup,sort_spec):
-    lcs = prior_lcs
+    lcs = dict(prior_lcs)
     lcs.update(tup.getDict())
     return eval(sort_spec, prior_globs, lcs)
 
