@@ -1,6 +1,7 @@
 import ast,_ast
 from pythonql.algebra.operators import *
 from collections import namedtuple
+import sys
 
 # List of classes for our internal AST
 
@@ -130,6 +131,87 @@ def convert_ast(a):
         else:
             return none_literal()
 
+
+def convert_ast8(a):
+    
+    if isinstance(a,_ast.BoolOp):
+        return boolOp_e(opMap[type(a.op)],
+                          [convert_ast8(x) for x in a.values])
+    
+    elif isinstance(a,_ast.BinOp):
+        return binaryOp_e(opMap[type(a.op)], 
+                          [convert_ast8(a.left), convert_ast8(a.right)])
+    
+    elif isinstance(a,_ast.UnaryOp):
+        return unaryOp_e(opMap[type(a.op)], convert_ast8(a.operand))
+    
+    elif isinstance(a,_ast.Lambda):
+        return lambda_e(convert_ast8(a.args), convert_ast8(a.body))
+    
+    elif isinstance(a,_ast.IfExp):
+        return if_e(convert_ast8(a.test),convert_ast8(a.body), convert_ast8(a.orelse))
+    
+    elif isinstance(a,_ast.Attribute):
+        return attribute_e(convert_ast8(a.value), name_e(a.attr))
+
+    elif isinstance(a,_ast.Subscript):
+        if isinstance(a.slice,ast.Index):
+            return subscript_ind_e(convert_ast8(a.value), convert_ast8(a.slice.value))
+        else:
+            return subscript_e(convert_ast8(a.value),
+                               convert_ast8(a.slice.lower),
+                               convert_ast8(a.slice.upper),
+                               convert_ast8(a.slice.step))
+    
+    elif isinstance(a,_ast.Compare):
+        return compare_e(convert_ast8(a.left),
+                        [opMap[type(x)] for x in a.ops],
+                        [convert_ast8(x) for x in a.comparators])
+    
+    elif isinstance(a,_ast.Call):
+        return call_e(convert_ast8(a.func),
+                     [convert_ast8(x) for x in a.args if not isinstance(x,_ast.Starred)],
+                     [{k.arg : convert_ast(k.value)} for k in a.keywords],
+                     [convert_ast8(x.value) for x in a.args if isinstance(x,_ast.Starred)]
+                     )
+    
+    elif isinstance(a,_ast.ListComp):
+        return listComp_e(convert_ast8(a.elt), [convert_ast8(x) for x in a.generators])
+    
+    elif isinstance(a,_ast.SetComp):
+        return setComp_e(convert_ast8(a.elt), [convert_ast8(x) for x in a.generators])
+    
+    elif isinstance(a,_ast.DictComp):
+        return dictComp_e(convert_ast8(a.key), convert_ast8(a.value), [convert_ast8(x) for x in a.generators])
+    
+    elif isinstance(a,_ast.comprehension):
+        return comprehension_e(convert_ast8(a.target), convert_ast8(a.iter), convert_ast8(a.ifs))
+    
+    elif isinstance(a,_ast.List):
+        return list_e([convert_ast8(x) for x in a.elts])
+    
+    elif isinstance(a,_ast.Tuple):
+        return tuple_e([convert_ast8(x) for x in a.elts])
+    
+    elif isinstance(a,_ast.Set):
+        return set_e([convert_ast8(x) for x in a.elts])
+    
+    elif isinstance(a,_ast.Dict):
+        return dict_e([convert_ast8(x) for x in a.keys],[convert_ast8(x) for x in a.values])
+    
+    elif isinstance(a,_ast.Constant):
+        if isinstance(a.value, str):
+            return str_literal(a.s)
+        elif isinstance(a.value, int) or isinstance(a.value,float):
+            return num_literal(a.value)
+        elif isinstance(a.value, bool):
+            return bool_literal(a.value)
+        elif a.value is None:
+            return none_literal()
+    
+    elif isinstance(a,_ast.Name):
+        return name_e(a.id)
+    
 all_ast_types = [boolOp_e,
                  binaryOp_e,
                  unaryOp_e,
@@ -364,7 +446,11 @@ def visit(a):
 # Compile into Python's AST and convert into our internal AST format
 
 def get_ast(expr):
-    return convert_ast(compile(expr, '<string>', 'eval',ast.PyCF_ONLY_AST).body)
+    a = compile(expr, '<string>', 'eval',ast.PyCF_ONLY_AST)
+
+    if sys.version_info.major==3 and sys.version_info.minor >= 8:
+        return convert_ast8(a.body)
+    return convert_ast(a.body)
 
 # Precedence table for figuring out whether we need to parenthesize an expression
 # when printing it out

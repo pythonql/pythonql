@@ -103,13 +103,13 @@ def PQDescPath(coll,f,lcs):
       keys = list(i.keys())
       [stack.append(map_tuple(j,i[j])) for j in keys]
 
-def PQTry( try_expr, except_expr, lcs):
+def PQTry( try_expr, except_expr, lcs, globs):
   try_expr = str_dec(try_expr)
   except_expr = str_dec(except_expr)
   try:
-    return eval(try_expr,lcs,globals())
+    return eval(try_expr,lcs,globs)
   except:
-    return eval(except_expr,lcs,globals())
+    return eval(except_expr,lcs,globs)
 
 # create a table with an empty tuple
 def emptyTuple(schema):
@@ -164,7 +164,6 @@ def processSelectClause(c, table, prior_lcs, prior_globs):
 # product of the input table with new sequence
 def processForClause(c, table, prior_lcs, prior_globs):
   new_schema = None
-  print(c.expr)
   comp_expr = compile(c.expr.lstrip(), "<string>", "eval")
 
   for t in table:
