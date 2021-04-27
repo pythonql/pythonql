@@ -178,7 +178,9 @@ def get_try_except_expression_terminals(tree,insideQuery):
     except_expr = children[3]
  
     result = mk_tok(["PQTry", "(", getTermsEsc(try_expr,insideQuery), ",",
-               getTermsEsc(except_expr,insideQuery), ",","locals()",")"])
+               getTermsEsc(except_expr,insideQuery), ",",
+               "locals()",",",
+               "globals()", ")"])
     return result
 
 # Convert the tuple constructor
