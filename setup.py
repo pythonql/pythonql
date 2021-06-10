@@ -5,10 +5,9 @@ from setuptools.command.test import test as TestCommand
 
 def _post_install():
   import shutil
-  from distutils.sysconfig import get_python_lib
-
-  python_lib = get_python_lib()
-  shutil.copy('pythonql.pth', python_lib)
+  import site
+  for d in site.getsitepackages():
+    shutil.copy('pythonql.pth', d)
 
 class my_install(_install):  
   def run(self):
@@ -38,7 +37,7 @@ class NoseTestCommand(TestCommand):
         nose.run_exit(argv=['nosetests'])
 
 setup(name='pythonql3',  
-        version='0.9.70',
+        version='0.9.71',
         description='PythonQL Query Language Extension',
         long_description="""
 PythonQL Query Language Extension
