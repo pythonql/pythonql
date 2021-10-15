@@ -6,17 +6,19 @@ from setuptools.command.test import test as TestCommand
 def _post_install():
   import shutil
   import site
-  for d in site.getsitepackages():
-    shutil.copy('pythonql.pth', d)
+  site_packages = site.getsitepackages()
+  # We only copy python encoding file into the first site package directory
+  shutil.copy('pythonql.pth', site_packages[0])
 
-class my_install(_install):  
+class install(_install):  
   def run(self):
-    _install.run(self)
 
     # the second parameter, [], can be replaced with a set of 
     # parameters if _post_install needs any
     self.execute(_post_install, [],  
                  msg="Running post install task")
+
+    super().run()
 
 class my_develop(_develop):  
   def run(self):
@@ -37,7 +39,7 @@ class NoseTestCommand(TestCommand):
         nose.run_exit(argv=['nosetests'])
 
 setup(name='pythonql3',  
-        version='0.9.71',
+        version='0.9.76',
         description='PythonQL Query Language Extension',
         long_description="""
 PythonQL Query Language Extension
@@ -63,7 +65,7 @@ PythonQL won't break your existing code, you just need to mark PythonQL files wi
           'Development Status :: 3 - Alpha',
           'License :: OSI Approved :: MIT License'
         ],
-        cmdclass={'install': my_install,  # override install
+        cmdclass={'install': install,  # override install
                   'develop': my_develop,  # develop is used for pip install -e .
                   'test': NoseTestCommand }  
         )
