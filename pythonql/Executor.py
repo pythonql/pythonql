@@ -574,7 +574,6 @@ def processWindowClause(c, table, prior_lcs, prior_globs):
 
     # Initialize the windows
     open_windows = []
-    closed_windows = []
 
     # Iterate over the binding sequence
     for (i,v) in enumerate(binding_seq):
@@ -596,21 +595,27 @@ def processWindowClause(c, table, prior_lcs, prior_globs):
         fill_in_end_vars(w["vars"],binding_seq,i)
 
         if check_end_condition(w["vars"],c,dict(lcs),prior_globs,var_mapping):
-          closed_windows.append(w)
+          # create a new tuple by extending the tuple from previous clauses
+          # with the window variables, for each open window that can now be closed
+
+          new_t = PQTuple( t.tuple + [None]*(len(new_schema)-len(schema)), new_schema)
+          new_t[ var_mapping["var"] ] = w["window"]
+          for val in [val for val in w["vars"].keys() if val in var_mapping]:
+            new_t[ var_mapping[val] ] = w["vars"][val]
+          yield new_t
         else:
           new_open_windows.append(w)
+
       open_windows = new_open_windows
           
     #close or remove all remaining open windows
     #if only is specified, we ignore non-closed windows
     if not c.only:
-      closed_windows.extend(open_windows)
-    
-    # create a new tuple by extending the tuple from previous clauses
-    # with the window variables, for each closed window
-    for w in closed_windows:
-      new_t = PQTuple( t.tuple + [None]*(len(new_schema)-len(schema)), new_schema)
-      new_t[ var_mapping["var"] ] = w["window"]
-      for v in [v for v in w["vars"].keys() if v in var_mapping]:
-        new_t[ var_mapping[v] ] = w["vars"][v]
-      yield new_t
+      # create a new tuple by extending the tuple from previous clauses
+      # with the window variables, for each open window
+      for w in open_windows:
+        new_t = PQTuple( t.tuple + [None]*(len(new_schema)-len(schema)), new_schema)
+        new_t[ var_mapping["var"] ] = w["window"]
+        for v in [v for v in w["vars"].keys() if v in var_mapping]:
+          new_t[ var_mapping[v] ] = w["vars"][v]
+        yield new_t
