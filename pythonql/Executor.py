@@ -501,18 +501,18 @@ def make_window_vars():
 all_start_vars = ["s_curr","s_at","s_prev","s_next"]
 
 # Fill in the start vars of the window, given the value list and current index
-def fill_in_start_vars(vars, binding_seq, i ):
-  vars["s_curr"] = binding_seq[i]
+def fill_in_start_vars(vars, prev, v, nxt, i):
+  vars["s_curr"] = v
   vars["s_at"] = i
-  vars["s_prev"] = binding_seq[i-1] if i>0 else None
-  vars["s_next"] = binding_seq[i+1] if i+1<len(binding_seq) else None
+  vars["s_prev"] = prev
+  vars["s_next"] = nxt
 
 # Fill in the end vars of the window, given the values list and current index
-def fill_in_end_vars(vars, binding_seq, i ):
-  vars["e_curr"] = binding_seq[i]
+def fill_in_end_vars(vars, prev, v, nxt, i):
+  vars["e_curr"] = v
   vars["e_at"] = i
-  vars["e_prev"] = binding_seq[i-1] if i>0 else None
-  vars["e_next"] = binding_seq[i+1] if i+1<len(binding_seq) else None
+  vars["e_prev"] = prev
+  vars["e_next"] = nxt
 
 # Check the start condition of the window, i.e. whether we should
 # start a new window at this location (without considering tumbling
@@ -547,6 +547,23 @@ def check_end_condition(vars,clause,locals,prior_globs,var_mapping):
 
   return res
 
+def generate_triplets(binding_seq):
+  if not isinstance(binding_seq, types.GeneratorType):
+    binding_seq = (x for x in binding_seq)
+
+  prev = None
+  v = next(binding_seq, None)
+  nxt = next(binding_seq, None)
+  i = 0
+  yield (prev,v,nxt,i)
+
+  while nxt:
+    prev = v
+    v = nxt
+    nxt = next(binding_seq, None)
+    i += 1
+    yield (prev,v,nxt, i)
+  
 # Process window clause
 def processWindowClause(c, table, prior_lcs, prior_globs):
   schema = None
@@ -568,7 +585,7 @@ def processWindowClause(c, table, prior_lcs, prior_globs):
     lcs = dict(prior_lcs)
     lcs.update(t.getDict())
     # Evaluate the binding sequence
-    binding_seq = list(eval(c.binding_seq, prior_globs, lcs))
+    binding_seq = eval(c.binding_seq, prior_globs, lcs)
 
     # Create initial window variables
 
@@ -576,13 +593,13 @@ def processWindowClause(c, table, prior_lcs, prior_globs):
     open_windows = []
 
     # Iterate over the binding sequence
-    for (i,v) in enumerate(binding_seq):
+    for (prev,v,nxt,i) in generate_triplets(binding_seq):
       # Try to open a new window
       # in case of tumbling windows, only open a
       # window if there are no open windows
       if not c.tumbling or (c.tumbling and not open_windows):
         vars = make_window_vars()
-        fill_in_start_vars(vars,binding_seq,i)
+        fill_in_start_vars(vars,prev,v,nxt,i)
         if check_start_condition(vars,c,dict(lcs),prior_globs,var_mapping):
           open_windows.append( {"window":[], "vars":vars} )
       
@@ -592,7 +609,7 @@ def processWindowClause(c, table, prior_lcs, prior_globs):
         # Add currnt value to the window
         w["window"].append(v)
 
-        fill_in_end_vars(w["vars"],binding_seq,i)
+        fill_in_end_vars(w["vars"],prev,v,nxt,i)
 
         if check_end_condition(w["vars"],c,dict(lcs),prior_globs,var_mapping):
           # create a new tuple by extending the tuple from previous clauses

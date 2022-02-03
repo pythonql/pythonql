@@ -39,7 +39,7 @@ class NoseTestCommand(TestCommand):
         nose.run_exit(argv=['nosetests'])
 
 setup(name='pythonql3',  
-        version='0.9.81',
+        version='0.9.83',
         description='PythonQL Query Language Extension',
         long_description="""
 PythonQL Query Language Extension
